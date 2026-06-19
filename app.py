@@ -19,7 +19,7 @@ from werkzeug.utils import secure_filename
 from database import get_db_connection
 
 BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env", override=True)
+load_dotenv(BASE_DIR / ".env", override=False)
 
 app = Flask(__name__, static_folder=None)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "qdoc-change-this-secret-key")
@@ -1448,46 +1448,79 @@ def get_volume_chart(filter_value, sql_start, sql_end):
 
 
 def build_insights(sql_start=None, sql_end=None, requests_count=None, completed_period=None, pending_requests=None):
-    total_residents = table_count("SELECT COUNT(*) AS c FROM users WHERE role='Resident'")
-    pending = pending_requests if pending_requests is not None else table_count("SELECT COUNT(*) AS c FROM requests WHERE status='Pending'")
-    total_requests = table_count('SELECT COUNT(*) AS c FROM requests')
-    completed = table_count("SELECT COUNT(*) AS c FROM requests WHERE status='Completed'")
-    overdue_rows = fetch_all(
-        "SELECT id, pickup_date FROM requests "
-        "WHERE pickup_date < CURDATE() AND status NOT IN ('Completed','Rejected')"
+    total_residents = table_count(
+        "SELECT COUNT(*) AS c FROM users WHERE role='Resident'"
     )
-    overdue_count = len(overdue_rows)
-    max_overdue_days = 0
-    for row in overdue_rows:
-        try:
-            max_overdue_days = max(max_overdue_days, (date.today() - row['pickup_date']).days)
-        except Exception:
-            pass
-    payments_today = table_count("SELECT COUNT(*) AS c FROM requests WHERE payment_status='Paid' AND DATE(updated_at)=CURDATE()")
+
+    pending = pending_requests if pending_requests is not None else table_count(
+        "SELECT COUNT(*) AS c FROM requests WHERE status='Pending'"
+    )
+
+    total_requests = table_count(
+        "SELECT COUNT(*) AS c FROM requests"
+    )
+
+    completed = table_count(
+        "SELECT COUNT(*) AS c FROM requests WHERE status='Completed'"
+    )
+
+    overdue_info = fetch_one(
+        """
+        SELECT 
+            COUNT(*) AS overdue_count,
+            IFNULL(MAX(DATEDIFF(CURDATE(), pickup_date)), 0) AS max_overdue_days
+        FROM requests
+        WHERE pickup_date < CURDATE()
+        AND status NOT IN ('Completed','Rejected')
+        """
+    ) or {}
+
+    overdue_count = int(overdue_info.get('overdue_count') or 0)
+    max_overdue_days = int(overdue_info.get('max_overdue_days') or 0)
+
+    payments_today = table_count(
+        "SELECT COUNT(*) AS c FROM requests WHERE payment_status='Paid' AND DATE(updated_at)=CURDATE()"
+    )
+
     docs_processed_today = table_count(
-        "SELECT COUNT(*) AS c FROM requests WHERE DATE(updated_at)=CURDATE() "
-        "AND status IN ('Approved','Processing','Ready for Pickup','Completed','Rejected')"
+        """
+        SELECT COUNT(*) AS c FROM requests
+        WHERE DATE(updated_at)=CURDATE()
+        AND status IN ('Approved','Processing','Ready for Pickup','Completed','Rejected')
+        """
     )
+
     items = [
-        {'color': 'primary', 'icon': 'ri-group-line', 'msg': f'{total_residents} Residents are currently registered in the system.'},
-        {'color': 'danger' if overdue_count else 'success', 'icon': 'ri-timer-flash-line', 'msg': f'{overdue_count} Requests are overdue' + (f' (x{max_overdue_days} days).' if overdue_count else '.')},
-        {'color': 'success', 'icon': 'ri-bank-card-line', 'msg': f'{payments_today} Payments recorded on this day.'},
-        {'color': 'info', 'icon': 'ri-file-check-line', 'msg': f'{docs_processed_today} documents processed/updated.'},
+        {
+            'color': 'primary',
+            'icon': 'ri-group-line',
+            'msg': f'{total_residents} Residents are currently registered in the system.'
+        },
+        {
+            'color': 'danger' if overdue_count else 'success',
+            'icon': 'ri-timer-flash-line',
+            'msg': f'{overdue_count} Requests are overdue' + (f' (x{max_overdue_days} days).' if overdue_count else '.')
+        },
+        {
+            'color': 'success',
+            'icon': 'ri-bank-card-line',
+            'msg': f'{payments_today} Payments recorded on this day.'
+        },
+        {
+            'color': 'info',
+            'icon': 'ri-file-check-line',
+            'msg': f'{docs_processed_today} documents processed/updated.'
+        },
     ]
+
     if total_requests > 0:
         efficiency = (completed / total_requests) * 100
-        items.append({'color': 'warning' if pending > 10 else 'secondary', 'icon': 'ri-speed-up-line', 'msg': f'Efficiency score: {efficiency:.1f}% of all requests are completed.'})
-    if sql_start and sql_end and requests_count is not None:
-        try:
-            days = max((datetime.fromisoformat(sql_end[:10]) - datetime.fromisoformat(sql_start[:10])).days + 1, 1)
-            prev_start = (datetime.fromisoformat(sql_start[:10]) - timedelta(days=days)).strftime('%Y-%m-%d 00:00:00')
-            prev_end = (datetime.fromisoformat(sql_start[:10]) - timedelta(days=1)).strftime('%Y-%m-%d 23:59:59')
-            previous = table_count('SELECT COUNT(*) AS c FROM requests WHERE request_date BETWEEN %s AND %s', (prev_start, prev_end))
-            if previous > 0:
-                growth = ((requests_count - previous) / previous) * 100
-                items.append({'color': 'success' if growth >= 0 else 'danger', 'icon': 'ri-line-chart-line', 'msg': f'Request volume changed by {growth:.1f}% compared with the previous period.'})
-        except Exception:
-            pass
+        items.append({
+            'color': 'warning' if pending > 10 else 'secondary',
+            'icon': 'ri-speed-up-line',
+            'msg': f'Efficiency score: {efficiency:.1f}% of all requests are completed.'
+        })
+
     return items
 
 @app.route('/users_admin.php')
@@ -2770,11 +2803,11 @@ def view_id():
     return render_template('view_id.html', user=user, **common_admin_context())
 
 if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
     print('Q:DOC Flask starting...')
     print('Project folder:', BASE_DIR)
     print('.env path:', BASE_DIR / '.env')
     print('.env exists:', (BASE_DIR / '.env').exists())
     print('DB_USER:', os.getenv('DB_USER'))
     print('DB_PASSWORD loaded:', 'YES' if os.getenv('DB_PASSWORD') else 'NO')
-    app.run(debug=True, host='0.0.0.0', port=5000)
-
+    app.run(debug=False, host='0.0.0.0', port=port)
