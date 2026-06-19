@@ -156,6 +156,10 @@ def assets(filename):
 def uploads(filename):
     return send_from_directory(BASE_DIR / 'uploads', filename)
 
+@app.route('/healthz')
+def healthz():
+    return 'OK', 200
+
 # ---------------------------------------------------------------------
 # Database helpers
 # ---------------------------------------------------------------------
