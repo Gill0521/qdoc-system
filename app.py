@@ -1446,29 +1446,58 @@ def resolve_dashboard_dates(filter_value='today', custom_start='', custom_end=''
 
 def get_volume_chart(filter_value, sql_start, sql_end):
     labels, values = [], []
+
+    start = datetime.fromisoformat(sql_start[:10]).date()
+    end = datetime.fromisoformat(sql_end[:10]).date()
+
     if filter_value == 'today':
         hourly = {h: 0 for h in range(24)}
+
         rows = fetch_all(
-            "SELECT HOUR(request_date) AS label, COUNT(*) AS c "
-            "FROM requests WHERE request_date BETWEEN %s AND %s "
-            "GROUP BY HOUR(request_date)",
+            """
+            SELECT HOUR(request_date) AS label, COUNT(*) AS c
+            FROM requests
+            WHERE request_date BETWEEN %s AND %s
+            GROUP BY HOUR(request_date)
+            """,
             (sql_start, sql_end)
         )
+
         for row in rows:
             hourly[int(row['label'])] = int(row['c'])
-        labels = list(hourly.keys())
+
+        labels = [f"{h}:00" for h in hourly.keys()]
         values = list(hourly.values())
+
     else:
+        daily = {}
+
+        current = start
+        while current <= end:
+            daily[current.isoformat()] = 0
+            current += timedelta(days=1)
+
         rows = fetch_all(
-            "SELECT DATE(request_date) AS label, COUNT(*) AS c "
-            "FROM requests WHERE request_date BETWEEN %s AND %s "
-            "GROUP BY DATE(request_date) ORDER BY DATE(request_date) ASC",
+            """
+            SELECT DATE(request_date) AS label, COUNT(*) AS c
+            FROM requests
+            WHERE request_date BETWEEN %s AND %s
+            GROUP BY DATE(request_date)
+            ORDER BY DATE(request_date) ASC
+            """,
             (sql_start, sql_end)
         )
+
         for row in rows:
             d = row['label']
-            labels.append(d.strftime('%b %d') if hasattr(d, 'strftime') else str(d))
-            values.append(int(row['c']))
+            key = d.isoformat() if hasattr(d, 'isoformat') else str(d)
+            daily[key] = int(row['c'])
+
+        for day, count in daily.items():
+            date_obj = datetime.fromisoformat(day).date()
+            labels.append(date_obj.strftime('%b %d'))
+            values.append(count)
+
     return labels, values
 
 
