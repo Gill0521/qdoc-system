@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Q-DOC</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css?v=25">
+
+<style>
+    /* --- GLOBAL LAYOUT --- */
+    body { background-color: #F4F7FA; min-height: 100vh; display: flex; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+    
+    /* --- SIDEBAR (Desktop) --- */
+    .sidebar-admin {
+        width: 280px;
+        background: linear-gradient(180deg, #0A3E9F 0%, #062a6e 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: fixed;
+        left: 0; top: 0; bottom: 0;
+        z-index: 1000;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+    }
+    
+    .sidebar-header { padding: 25px; flex-shrink: 0; }
+    .brand-title { font-weight: 600; font-size: 1.3rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+
+    /* Navigation Area */
+    .sidebar-nav { 
+        flex: 1; 
+        padding: 0 7px; 
+        overflow-y: auto; 
+        scrollbar-width: none; 
+    }
+    .sidebar-nav::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.90rem;
+        padding: 10px 18px;
+        border-radius: 12px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    .nav-link i { font-size: 1.20rem; margin-right: 12px; width: 24px; text-align: center; transition: 0.3s; }
+    
+    .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(3px); }
+    
+    .nav-link.active { 
+        background: white; 
+        color: #0A3E9F; 
+        font-weight: 700; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+    }
+    .nav-link.active i { color: #0A3E9F; }
+
+    /* Sidebar Profile Footer */
+    .sidebar-footer {
+        padding: 20px;
+        background: rgba(0,0,0,0.15);
+        border-top: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+    }
+    
+    .user-card {
+        display: flex; align-items: center; gap: 12px; 
+        padding: 8px; border-radius: 12px;
+        text-decoration: none; color: white; 
+        transition: 0.3s; margin-bottom: 12px;
+    }
+    .user-card:hover { background: rgba(255,255,255,0.08); }
+    
+    .user-avatar { 
+        width: 45px; height: 45px; min-width: 45px;
+        border-radius: 50%; object-fit: cover; 
+        border: 2px solid rgba(255,255,255,0.3); 
+    }
+    .user-initials {
+        width: 45px; height: 45px; min-width: 45px; border-radius: 50%; 
+        background: rgba(255,255,255,0.2); 
+        color: white; font-weight: 700; 
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid rgba(255,255,255,0.3); font-size: 1rem;
+    }
+
+    .user-info { overflow: hidden; }
+    .user-info h6 { margin: 0; font-size: 0.95rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info small { font-size: 0.75rem; color: rgba(255,255,255,0.6); display: block; letter-spacing: 0.5px; }
+
+    .logout-btn-sidebar {
+        display: flex; align-items: center; justify-content: center;
+        width: 100%; padding: 10px;
+        background: rgba(255, 255, 255, 0.1); 
+        color: white; border-radius: 10px; 
+        font-size: 0.9rem; font-weight: 600; text-decoration: none;
+        transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .logout-btn-sidebar:hover { background: #dc3545; border-color: #dc3545; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); }
+
+    /* --- MAIN CONTENT & RESPONSIVENESS --- */
+    .main-content-admin { 
+        flex: 1; 
+        margin-left: 280px; /* Offset for fixed sidebar */
+        padding: 2rem; 
+        width: calc(100% - 280px);
+        overflow-y: auto;
+    }
+
+    /* --- DASHBOARD SPECIFIC STYLES --- */
+    .filter-bar { background: #ffffff; padding: 6px 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: inline-flex; gap: 8px; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
+    .filter-btn { border: none; background: transparent; padding: 8px 20px; border-radius: 30px; font-size: 0.85rem; color: #64748b; font-weight: 600; text-decoration: none; transition: all 0.3s ease; }
+    .filter-btn:hover { background: #eef2ff; color: #0A3E9F; transform: translateY(-1px); }
+    .filter-btn.active { background: #0A3E9F; color: white; box-shadow: 0 4px 10px rgba(10, 62, 159, 0.3); }
+    
+    .dashboardcard-admin { border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); background: #ffffff; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; position: relative; }
+    .dashboardcard-admin:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+
+    .card-icon { width: 55px; height: 55px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+    .icon-primary { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+    .icon-warning { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: white; }
+    .icon-success { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: white; }
+    .icon-purple  { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color: white; }
+    
+    .card-pending { background: #fff; border-left: 6px solid #ff6b6b; }
+    .card-pending .card-icon { background: linear-gradient(135deg, #ff6b6b 0%, #ee5253 100%); color: white; box-shadow: 0 8px 15px rgba(238, 82, 83, 0.3); }
+    
+    h2 { font-family: 'Segoe UI', sans-serif; letter-spacing: -0.5px; }
+    h6.fw-bold { letter-spacing: 0.5px; color: #334155; }
+
+    .activity-feed { position: relative; }
+    .activity-item { padding: 15px 0; border-bottom: 1px dashed #e2e8f0; display: flex; align-items: center; gap: 15px; transition: background 0.2s; }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-item:hover { background: #f8fafc; border-radius: 8px; padding-left: 10px; padding-right: 10px; margin: 0 -10px; }
+    .activity-avatar { width: 40px; height: 40px; background: #f1f5f9; color: #64748b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .activity-time { font-size: 0.75rem; color: #94a3b8; font-weight: 500; background: #f1f5f9; padding: 2px 8px; border-radius: 12px; }
+    
+    .insight-card { transition: transform 0.2s; }
+    .insight-card:hover { transform: translateX(5px); }
+    .text-primary { color: #0d6efd !important; }
+
+    /* AI Insight Glow Effect */
+    .insight-card[data-type="predictive"], .insight-card[data-type="anomaly"] {
+        border-left: 4px solid #f59e0b !important;
+        background: linear-gradient(90deg, #fffbeb 0%, #ffffff 100%) !important;
+    }
+
+    .insight-card i {
+        transition: transform 0.3s ease;
+    }
+
+    .insight-card:hover i {
+        transform: scale(1.2) rotate(10deg);
+    }
+
+    /* --- MOBILE ADJUSTMENTS --- */
+    @media (max-width: 991px) {
+        .sidebar-admin { display: none; } 
+        .main-content-admin { margin-left: 0; width: 100%; padding: 1.5rem; }
+        .filter-bar { margin-top: 15px; width: 100%; justify-content: space-between; overflow-x: auto; }
+        .filter-btn { padding: 6px 15px; flex-shrink: 0; }
+    }
+</style>
+</head>
+<body>
+
+    <div class="sidebar-admin d-none d-lg-flex">
+        <div class="sidebar-header">
+            <div class="brand-title">
+                <i class="ri-shield-user-fill me-2"></i> Admin Portal
+            </div>
+        </div>
+        
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link active" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="users_admin.php"><i class="ri-group-line"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="managedocs_admin.php"><i class="ri-folder-open-line"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link" href="reports_admin.php"><i class="ri-pie-chart-line"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="logs_admin.php"><i class="ri-history-line"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="profile_admin.php" class="user-card" title="View Profile">
+                
+                    {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="User" class="user-avatar">
+                
+                    {% else %}
+                    <div class="user-initials">{{ initials }}</div>
+                    {% endif %}
+                
+                
+                <div class="user-info">
+                    <h6>{{ admin_name|e }}</h6>
+                    <small>{{ '' }}</small>
+                </div>
+            </a>
+            
+            <a href="logout.php" class="logout-btn-sidebar">
+                <i class="ri-logout-box-r-line me-2"></i> Sign Out
+            </a>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-white" id="mobileMenuLabel"><i class="ri-admin-line me-2"></i> Admin Portal</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <ul class="nav flex-column p-3 gap-2 mb-auto">
+                <li class="nav-item"><a class="nav-link text-white fw-bold bg-primary rounded" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="users_admin.php"><i class="ri-group-line"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="managedocs_admin.php"><i class="ri-folder-open-line"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="reports_admin.php"><i class="ri-pie-chart-line"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="logs_admin.php"><i class="ri-history-line"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+
+            <div class="p-3 border-top border-secondary bg-dark">
+                <a href="profile_admin.php" class="d-flex align-items-center text-white text-decoration-none mb-3">
+                    
+                        {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="Admin" class="user-avatar me-2" style="border:none;">
+                    
+                    {% else %}
+                    <div class="user-initials me-2" style="width:38px;height:38px;font-size:0.8rem;">{{ initials }}</div>
+                    {% endif %}
+                    
+                    <div>
+                        <div class="fw-bold">{{ admin_name|e }}</div>
+                        <small class="text-white-50">{{ admin_role }}</small>
+                    </div>
+                </a>
+                <a class="btn btn-outline-danger w-100 btn-sm" href="logout.php"><i class="ri-logout-box-line me-2"></i> Sign Out</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content-admin">
+        
+        <div class="d-flex align-items-center justify-content-between mb-4 d-lg-none">
+            <h4 class="fw-bold text-dark mb-0">Dashboard</h4>
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i class="ri-menu-line"></i> Menu
+            </button>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-5">
+            <div>
+                <h3 class="fw-bold text-dark mb-1">Dashboard Overview</h3>
+                <p class="text-muted mb-0">Live monitoring of barangay requests and activities.</p>
+            </div>
+            <div class="filter-bar">
+                <a href="?filter=today" class="filter-btn {{ 'active' if filter == 'today' else '' }}">Today</a>
+                <a href="?filter=7days" class="filter-btn {{ 'active' if filter == '7days' else '' }}">7 Days</a>
+                <a href="?filter=30days" class="filter-btn {{ 'active' if filter == '30days' else '' }}">30 Days</a>
+                <button type="button" class="filter-btn text-primary" data-bs-toggle="modal" data-bs-target="#customRangeModal">
+                    <i class="ri-calendar-event-line fs-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboardcard-admin p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div style="overflow: hidden;">
+                            <p class="text-muted small fw-bold mb-1 text-uppercase ls-1">Most Requested</p>
+                            <h4 class="fw-bold mb-0 text-dark" style="word-wrap: break-word;" title="{{ top_doc }}">
+                                {{ top_doc }}
+                            </h4>
+                        </div>
+                        <div class="card-icon icon-purple">
+                            <i class="ri-trophy-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboardcard-admin card-pending p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="text-danger small fw-bold mb-1 text-uppercase ls-1">Pending Backlog</p>
+                            <h2 class="fw-bold mb-0 text-danger">{{ pending_requests }}</h2>
+                        </div>
+                        <div class="card-icon">
+                            <i class="ri-alarm-warning-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboardcard-admin p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="text-muted small fw-bold mb-1 text-uppercase ls-1">Incoming Requests</p>
+                            <h2 class="fw-bold mb-0 text-dark">{{ requests_count }}</h2>
+                        </div>
+                        <div class="card-icon icon-warning">
+                            <i class="ri-file-list-3-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboardcard-admin p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="text-muted small fw-bold mb-1 text-uppercase ls-1">Work Processed</p>
+                            <h2 class="fw-bold mb-0 text-dark">{{ completed_today }}</h2>
+                        </div>
+                        <div class="card-icon icon-success">
+                            <i class="ri-checkbox-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-4">
+                <div class="dashboardcard-admin p-4 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold mb-0">REQUEST STATUS</h6>
+                        <span class="badge bg-light text-dark rounded-pill">Real-time</span>
+                    </div>
+                    <div class="flex-grow-1" style="min-height: 250px; position: relative;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="dashboardcard-admin p-4 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold mb-0">INCOMING TRAFFIC (VOLUME)</h6>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">
+                            <i class="ri-bar-chart-fill me-1"></i> Analytics
+                        </span>
+                    </div>
+                    <div class="flex-grow-1" style="min-height: 250px; position: relative;">
+                        <canvas id="peakHoursChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="dashboardcard-admin p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="fw-bold mb-0"><i class="ri-history-line me-2 text-primary"></i> RECENT ACTIVITY</h6>
+                        <a href="logs_admin.php" class="btn btn-sm btn-light rounded-pill px-3 fw-bold">View All</a>
+                    </div>
+                    
+                    <div class="activity-feed">
+                        {% if activities %}
+                            {% for act in activities %}
+                                <div class="activity-item">
+                                    <div class="activity-avatar">
+                                        <i class="ri-user-smile-line"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold text-dark" style="font-size: 0.95rem;">{{ act.fullname|e }}</span> 
+                                            <span class="activity-time">{{ act.created_at.strftime('%b %d, %I:%M %p') if act.created_at else '' }}</span>
+                                        </div>
+                                        <div class="text-secondary small" style="line-height: 1.4;">
+                                            <span class="badge bg-light text-dark border me-1">{{ act.action|e }}</span>
+                                            {{ act.description|e }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="ri-inbox-line fs-1 text-muted opacity-25"></i>
+                                <p class="text-muted small mt-2">No recent activities recorded.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="dashboardcard-admin p-4 h-100" style="background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);">
+                    <h6 class="fw-bold text-dark mb-4"><i class="ri-magic-line me-2 text-warning"></i> SYSTEM INSIGHTS</h6>
+                    <div class="d-flex flex-column gap-3">
+                        {% for item in insights %}
+                            <div class="insight-card p-3 rounded-4 bg-white shadow-sm border border-light d-flex align-items-center gap-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
+                                     style="width: 45px; height: 45px; background-color: rgba(var(--bs-{{ item.color }}-rgb), 0.1);">
+                                    <i class="{{ item.icon }} text-{{ item.color }} fs-5"></i>
+                                </div>
+                                <div class="small text-secondary lh-sm">
+                                    {{ item.msg }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="customRangeModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body pt-4">
+                <h6 class="fw-bold mb-3 text-center">Select Custom Range</h6>
+                <form action="dashboard_admin.php" method="GET">
+                    <input type="hidden" name="filter" value="custom">
+                    <div class="mb-2"><input type="date" name="start" class="form-control bg-light border-0" required value="{{ startDate }}"></div>
+                    <div class="mb-4"><input type="date" name="end" class="form-control bg-light border-0" required value="{{ endDate }}"></div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">Apply Filter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    if (typeof Chart === 'undefined') { console.error("Chart.js failed to load."); return; }
+
+    const statusLabels = {{ status_labels|tojson }};
+    const statusData = {{ status_data|tojson }};
+    const chartLabels = {{ chart_labels|tojson }};
+    const chartData = {{ chart_data|tojson }};
+
+    // --- STATUS CHART ---
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx && statusLabels.length > 0) {
+        const statusColors = statusLabels.map(label => {
+            const l = label.trim();
+            switch (l) {
+                case 'Pending': return '#ff6b6b';
+                case 'Processing': return '#4facfe';
+                case 'Ready for Pickup': return '#a18cd1';
+                case 'Approved': return '#43e97b';
+                case 'Completed': return '#146c43';
+                case 'Rejected': return '#95a5a6';
+                default: return '#e0e0e0';                 
+            }
+        });
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderWidth: 0, hoverOffset: 10 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { boxWidth: 10, usePointStyle: true, font: {size: 11} } } },
+                cutout: '75%', layout: { padding: 10 }
+            }
+        });
+    } else if (statusCtx) {
+        statusCtx.parentElement.innerHTML = '<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50"><i class="ri-pie-chart-line fs-1"></i><span class="small">No Data</span></div>';
+    }
+
+    // --- VOLUME CHART ---
+    const peakCtx = document.getElementById('peakHoursChart');
+    if (peakCtx) {
+        const formattedLabels = chartLabels.map(l => (typeof l === 'number') ? l + ":00" : l);
+        new Chart(peakCtx, {
+            type: 'line',
+            data: {
+                labels: formattedLabels,
+                datasets: [{
+                    label: 'Requests', data: chartData, borderColor: '#4facfe',
+                    backgroundColor: (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, 'rgba(79, 172, 254, 0.3)');
+                        gradient.addColorStop(1, 'rgba(79, 172, 254, 0.0)');
+                        return gradient;
+                    },
+                    borderWidth: 3, tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#ffffff', pointBorderColor: '#4facfe', pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8 } },
+                scales: {
+                    y: { beginAtZero: true, border: { display: false }, grid: { color: '#f1f5f9' }, ticks: { font: {size: 11}, color: '#94a3b8', stepSize: 1, precision: 0 } },
+                    x: { grid: { display: false }, border: { display: false }, ticks: { font: {size: 11}, color: '#94a3b8' } }
+                }
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

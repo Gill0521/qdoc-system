@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Profile | Q-DOC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .profile-container { max-width: 550px; margin: 50px auto; }
+        .avatar-circle {
+            width: 100px; height: 100px; background: #0A3E9F; color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; font-weight: bold; margin: 0 auto 20px;
+            box-shadow: 0 4px 15px rgba(10, 62, 159, 0.3);
+        }
+        .card { border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .info-label { font-size: 0.75rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; }
+        .otp-input { letter-spacing: 10px; font-size: 24px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container profile-container">
+        <a href="dashboard_offcl.php" class="btn btn-sm btn-link text-decoration-none text-muted mb-3 p-0">
+            <i class="ri-arrow-left-line"></i> Back to Dashboard
+        </a>
+
+        <div class="card p-4 text-center mb-4">
+            <div class="avatar-circle">{{ initials }}</div>
+            <h3 class="fw-bold mb-0">{{ user.fullname }}</h3>
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 mt-2 rounded-pill">{{ user.position }}</span>
+        </div>
+
+        <div class="card p-4">
+            <form id="profileForm">
+                <div class="mb-3 text-start">
+                    <label class="info-label">Full Name</label>
+                    <input type="text" class="form-control bg-light border-0" value="{{ user.fullname }}" readonly>
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="info-label">Position</label>
+                    <input type="text" class="form-control bg-light border-0" value="{{ user.position }}" readonly>
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="info-label">Email Address</label>
+                    <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="info-label">New Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current">
+                </div>
+                <div class="mb-4 text-start">
+                    <label class="info-label">Confirm New Password</label>
+                    <input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">Update Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="otpModal" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body p-5 text-center">
+                    <i class="ri-mail-check-line text-primary mb-3" style="font-size: 3.5rem;"></i>
+                    <h4 class="fw-bold">Verification Code</h4>
+                    <p class="text-muted small">Enter the 6-digit code sent to <br><span id="maskedEmail" class="fw-bold text-dark"></span></p>
+                    <input type="text" id="otp_code" class="form-control otp-input mb-4" maxlength="6" placeholder="000000">
+                    <button onclick="verifyCode()" class="btn btn-primary w-100 fw-bold py-2">Verify & Update</button>
+                    <button onclick="resendCode()" class="btn btn-link btn-sm mt-3 text-decoration-none text-muted">Resend Code</button>
+                    <br><button type="button" class="btn btn-sm btn-light mt-2" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
+
+        document.getElementById('profileForm').onsubmit = function(e) {
+            e.preventDefault();
+        
+            // Get values for validation
+            const email = this.querySelector('input[name="email"]').value;
+            const password = this.querySelector('input[name="password"]').value;
+            const confirmPassword = this.querySelector('input[name="confirm_password"]') ? this.querySelector('input[name="confirm_password"]').value : password;
+
+            // --- 1. EMAIL VALIDATION (from register.php) ---
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email.trim())) {
+                Swal.fire('Error', 'Please enter a valid email address.', 'error');
+                return;
+            }
+
+            // --- 2. PASSWORD VALIDATION (from register.php) ---
+            // Only validates if the password field is NOT empty
+            if (password.length > 0) {
+                const strongPwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+                if (!strongPwd.test(password)) {
+                    Swal.fire('Weak Password', 'Password must be 8+ characters, with Upper, Lower, Number & Special character.', 'error');
+                    return;
+                }
+
+                // Check if Passwords match
+                if (password !== confirmPassword) {
+                    Swal.fire('Error', 'Passwords do not match!', 'error');
+                    return;
+                }
+            }
+
+            // --- 3. PROCEED TO AJAX IF VALID ---
+            const formData = new FormData(this);
+            Swal.fire({ title: 'Sending OTP...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            fetch('send_profile_otp.php', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if(data.status === 'success') {
+                    document.getElementById('maskedEmail').innerText = data.masked_email;
+                    otpModal.show();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        };
+
+        function verifyCode() {
+            const code = document.getElementById('otp_code').value;
+            const formData = new FormData();
+            formData.append('code', code);
+
+            fetch('verify_profile_update.php', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    Swal.fire('Success', 'Profile updated!', 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+
+        function resendCode() {
+            fetch('resend_profile_code.php').then(res => res.json()).then(data => {
+                if(data.status === 'success') Swal.fire('Sent', 'New code sent!', 'success');
+            });
+        }
+    </script>
+    <script>
+        // Check account status every 5 seconds
+        setInterval(function() {
+            fetch('check_status.php')
+                .then(response => response.json())
+                .then(data => {
+                    
+                    // 1. Handle REJECTED Users
+                    if (data.status === 'Rejected') {
+                        if (data.role === 'Resident') {
+                            // Residents go to Pending Page
+                            window.location.href = 'pending_status.php'; 
+                        } else {
+                            // Officials go to Access Denied Page
+                            window.location.href = 'access_denied.php'; 
+                        }
+                    } 
+                    
+                    // 2. Handle LOGGED OUT Users
+                    else if (data.status === 'logged_out') {
+                        window.location.href = 'login.php';
+                    }
+                    
+                })
+                .catch(error => console.error('Error checking status:', error));
+        }, 5000); 
+    </script>
+</body>
+</html>

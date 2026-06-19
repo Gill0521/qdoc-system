@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Q-DOC: Barangay Document Request System</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="./assets/css/style.css?v=25">
+
+    <style>
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, #1e58c8 0%, #052c78 100%);
+            color: white;
+        }
+
+        .bg-brand-gradient .section-title h1 {
+            color: #ffffff !important;
+        }
+
+        .bg-brand-gradient .section-title p {
+            color: rgba(255, 255, 255, 0.86) !important;
+        }
+
+        .bg-brand-gradient .line {
+            background-color: #ffffff !important;
+        }
+
+        .section-title .line {
+            width: 60px;
+            height: 4px;
+            background-color: #0A3E9F;
+            margin: 16px auto 24px auto;
+        }
+
+        .btn-request-yellow {
+            background: #ffdf2b;
+            border-color: #ffdf2b;
+            color: #0f172a;
+            box-shadow: 0 12px 25px rgba(255, 223, 43, 0.24);
+            font-weight: 700;
+        }
+
+        .btn-request-yellow:hover {
+            background: #f8c600;
+            border-color: #f8c600;
+            color: #0f172a;
+            transform: translateY(-2px);
+        }
+
+        .about-feature-title {
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        /* SERVICES - smoother hover, full blue card */
+        .service-card {
+            background-color: #ffffff !important;
+            border-radius: 15px;
+            min-height: 245px;
+            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(15, 23, 42, 0.04);
+            position: relative;
+            overflow: hidden;
+            transition: background-color .45s ease, color .45s ease, transform .45s ease, box-shadow .45s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .service::after,
+        .service-card::after,
+        .service.service-card::after {
+            display: none !important;
+            content: none !important;
+        }
+
+        .service-card h4,
+        .service-card p,
+        .service-card .iconbox,
+        .service-card .iconbox i {
+            transition: all .45s ease;
+        }
+
+        .service-card:hover,
+        .service.service-card:hover {
+            background-color: #0A3E9F !important;
+            color: #ffffff !important;
+            transform: translateY(-8px);
+            box-shadow: 0 22px 48px rgba(10, 62, 159, 0.32);
+        }
+
+        .service-card:hover h4,
+        .service-card:hover p {
+            color: #ffffff !important;
+        }
+
+        .service-card:hover .iconbox {
+            background-color: #ffffff !important;
+            color: #0A3E9F !important;
+        }
+
+        .service-card:hover .iconbox i {
+            color: #0A3E9F !important;
+        }
+
+        .service-card p {
+            flex-grow: 1;
+        }
+
+        .service-card .iconbox {
+            border-radius: 8px;
+        }
+
+        /* OFFICIALS - details only show on hover */
+        .official-hover-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            height: 360px;
+            background: #ffffff;
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+            transition: all .35s ease;
+            border-bottom: 4px solid #0A3E9F;
+        }
+
+        .official-hover-card:hover {
+            transform: translateY(-8px);
+            border-bottom-color: #ffdf2b;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
+        }
+
+        .official-photo-full {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .45s ease;
+        }
+
+        .official-hover-card:hover .official-photo-full {
+            transform: scale(1.08);
+        }
+
+        .official-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(10, 62, 159, .94), rgba(10, 62, 159, .18));
+            color: #ffffff;
+            opacity: 0;
+            visibility: hidden;
+            transition: all .35s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 28px;
+            text-align: center;
+        }
+
+        .official-hover-card:hover .official-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .official-name {
+            font-weight: 800;
+            margin-bottom: 6px;
+            font-size: 1.25rem;
+            color: #ffffff;
+        }
+
+        .official-position {
+            color: #ffdf2b;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .official-detail-text {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin-bottom: 0;
+            color: rgba(255, 255, 255, .9);
+        }
+
+        /* ANNOUNCEMENTS - image not cropped */
+        .announcement-card {
+            background: #ffffff;
+            border-radius: 0;
+            height: 100%;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            transition: all .35s ease;
+        }
+
+        .announcement-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.14);
+        }
+
+        .announcement-img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            background: #ffffff;
+        }
+
+        .announcement-body {
+            padding: 28px 28px 32px;
+        }
+
+        .announcement-title {
+            font-weight: 800;
+            font-size: 1.45rem;
+            color: #1e293b;
+            line-height: 1.3;
+        }
+
+        .announcement-excerpt {
+            color: #111827;
+            margin-top: 10px;
+            line-height: 1.8;
+        }
+
+        .read-more-btn {
+            color: #0A3E9F;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .read-more-btn:hover {
+            color: #4572C4;
+        }
+
+        .footer-logo {
+            max-height: 56px;
+            width: auto;
+            max-width: 170px;
+        }
+    </style>
+</head>
+
+<body data-bs-spy="scroll" data-bs-target=".navbar">
+
+    <nav class="navbar navbar-expand-lg bg-white sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#hero">
+                <img src="./assets/images/logo-dark.svg" alt="Q-DOC Logo" style="max-height: 40px;">
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#hero">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#officials">Officials</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#announcements">Announcements</a></li>
+                </ul>
+
+                <a href="login.php" class="btn btn-brand ms-lg-3">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <section id="hero" class="min-vh-100 d-flex align-items-center text-center bg-brand-gradient">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1 data-aos="fade-left" class="text-uppercase text-yellow fw-bold display-1">Q-DOC:</h1>
+                    <h1 data-aos="fade-left" class="text-white fw-bold display-1">Barangay Document</h1>
+                    <h1 data-aos="fade-left" class="text-white fw-bold display-1">Request System</h1>
+
+                    <h5 class="text-white mt-4 mb-4" data-aos="fade-right">
+                        Fast. Secure. Hassle-free barangay services online.
+                    </h5>
+
+                    <div data-aos="fade-up" data-aos-delay="50">
+                        <a href="login.php" class="btn btn-request-yellow btn-lg rounded-pill me-2">
+                            <i class="ri-file-list-3-line"></i> Request Documents
+                        </a>
+
+                        <a href="register.php" class="btn btn-outline-light btn-lg rounded-pill icon-right">
+                            <i class="ri-user-add-line"></i> Register Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section-padding bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center" data-aos="fade-down" data-aos-delay="50">
+                    <div class="section-title">
+                        <h1 class="display-4 fw-semibold">About Us</h1>
+                        <div class="line"></div>
+                        <p>We aim to modernize barangay services through secure and transparent digital solutions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center align-items-center g-5">
+                <div class="col-lg-6 d-flex justify-content-center align-items-center" data-aos="fade-down"
+                    data-aos-delay="50">
+                    <img src="./assets/images/about1.jpg" alt="About Q-DOC" class="img-fluid rounded-3 shadow-sm">
+                </div>
+
+                <div data-aos="fade-down" data-aos-delay="100" class="col-lg-5">
+                    <h1>About Q-DOC</h1>
+
+                    <p class="mt-3 mb-4">
+                        Q-DOC is a digital platform that makes barangay document requests faster, safer, and more
+                        convenient for residents.
+                    </p>
+
+                    <div class="d-flex pt-3 mb-3">
+                        <div class="iconbox me-4">
+                            <i class="ri-timer-flash-line"></i>
+                        </div>
+                        <div>
+                            <h4 class="about-feature-title">Quick Service</h4>
+                            <p>Request barangay documents online anytime.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <div class="iconbox me-4">
+                            <i class="ri-file-lock-line"></i>
+                        </div>
+                        <div>
+                            <h4 class="about-feature-title">Secure Process</h4>
+                            <p>All requests are verified and protected.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <div class="iconbox me-4">
+                            <i class="ri-eye-line"></i>
+                        </div>
+                        <div>
+                            <h4 class="about-feature-title">Transparent System</h4>
+                            <p>Track the status of your document in real time.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <div class="iconbox me-4">
+                            <i class="ri-community-line"></i>
+                        </div>
+                        <div>
+                            <h4 class="about-feature-title">Community-Focused</h4>
+                            <p>Built to make public service more accessible.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="section-padding bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center" data-aos="fade-down" data-aos-delay="100">
+                    <div class="section-title">
+                        <h1 class="display-4 fw-semibold">Barangay Services</h1>
+                        <div class="line"></div>
+                        <p>Access barangay services and request official documents online.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 text-center">
+                {% set landing_services = [
+                    ('Barangay Clearance', 'Certifies that the resident has no pending cases in the barangay.', 'ri-shield-check-line'),
+                    ('Certificate of Residency', 'Confirms that a person lives within the barangay.', 'ri-home-4-line'),
+                    ('Certificate of Indigency', 'Proves that the resident belongs to a low-income household.', 'ri-hand-heart-line'),
+                    ('Business Permit', 'Authorizes an individual or group to run a business.', 'ri-briefcase-4-line'),
+                    ('Barangay ID', 'Serves as an official identification for residents.', 'ri-id-card-line'),
+                    ('Solo Parent Application', 'Allows solo parents to register and access assistance.', 'ri-user-heart-line')
+                ] %}
+
+                {% for name, desc, icon in landing_services %}
+                <div class="col-lg-4 col-sm-6" data-aos="fade-down" data-aos-delay="{{ 100 + (loop.index0 * 100) }}">
+                    <div class="service service-card theme-shadow p-lg-5 p-4">
+                        <div class="iconbox">
+                            <i class="{{ icon }}"></i>
+                        </div>
+                        <h4 class="mt-4 mb-3 fw-bold">{{ name }}</h4>
+                        <p class="mb-0">{{ desc }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section id="officials" class="section-padding bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center" data-aos="fade-down" data-aos-delay="100">
+                    <div class="section-title">
+                        <h1 class="display-4 fw-semibold">Barangay Officials</h1>
+                        <div class="line"></div>
+                        <p>Get to know the dedicated leaders of barangay.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 text-center justify-content-center">
+                {% set landing_officials = [
+                    ('Johnny Co', 'Barangay Captain', 'official-boy-member.jpg'),
+                    ('Ardous Paul Nery', 'Barangay Councilor', 'official-girl-member.jpg'),
+                    ('Dante Cantoria', 'Barangay Councilor', 'official-boy-member.jpg'),
+                    ('Jhun Alvarez', 'Barangay Councilor', 'official-girl-member.jpg'),
+                    ('Eman San Mateo', 'Barangay Councilor', 'official-boy-member.jpg'),
+                    ('Lany Cruz', 'Barangay Councilor', 'official-girl-member.jpg')
+                ] %}
+
+                {% for name, position, photo in landing_officials %}
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ 100 + (loop.index0 * 80) }}">
+                    <div class="official-hover-card">
+                        <img class="official-photo-full" src="./assets/images/{{ photo }}" alt="{{ name }}">
+
+                        <div class="official-overlay">
+                            <div>
+                                <h4 class="official-name">{{ name }}</h4>
+                                <p class="official-position">{{ position }}</p>
+                                <p class="official-detail-text">
+                                    Dedicated to serving the community through accessible and responsive barangay service.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section id="announcements" class="section-padding bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center" data-aos="fade-down" data-aos-delay="100">
+                    <div class="section-title">
+                        <h1 class="display-4 fw-semibold">Latest Announcements</h1>
+                        <div class="line"></div>
+                        <p>Stay informed with the latest updates, advisories, and activities from Barangay Sto. Nino.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-5">
+                {% set landing_announcements = [
+                    ('announcement-1.jpg', 'Free Pediatric Consultation', 'Free pediatric consultation with Dr. Monina M. De Jesus. Every Wednesday, 9AM - 11AM'),
+                    ('announcement-2.jpg', 'Libreng Bakuna Laban sa Rabies', 'Ligtas ang bawat Pilipino, ligtas ang komunidad. Magpabakuna laban sa rabies — libre para sa mga nakagat o nakalmot ng aso at pusa, katuwang ang Animal Bite Center - La huerta branch.'),
+                    ('announcement-3.jpg', 'PWD Financial Assistance Distribution', 'Person with disability financial assistance program. October 24, 2025 (Friday), 8:30AM-3PM')
+                ] %}
+
+                {% for image, title, description in landing_announcements %}
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ 100 + (loop.index0 * 100) }}">
+                    <div class="announcement-card">
+                        <img class="announcement-img" src="./assets/images/{{ image }}" alt="{{ title }}">
+                        <div class="announcement-body">
+                            <h4 class="announcement-title">{{ title }}</h4>
+                            <p class="announcement-excerpt">{{ description }}</p>
+                            <a href="login.php" class="read-more-btn">
+                                Read More <i class="ri-arrow-right-line"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark">
+        <div class="footer-top">
+            <div class="container">
+                <div class="row gy-5">
+                    <div class="col-lg-3 col-sm-6">
+                        <img class="footer-logo" src="./assets/images/logo-light.svg" alt="Q-DOC Logo">
+                        <div class="line"></div>
+                        <p>Official Document Request System for {{ BRGY_NAME|e }}.</p>
+
+                        <div class="social-icons">
+                            <a href="#"><i class="ri-facebook-fill"></i></a>
+                            <a href="#"><i class="ri-twitter-fill"></i></a>
+                            <a href="#"><i class="ri-instagram-fill"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6">
+                        <h4 class="mb-0 text-white">SERVICES</h4>
+                        <div class="line"></div>
+                        <ul>
+                            <li><a href="login.php">Barangay Clearance</a></li>
+                            <li><a href="login.php">Certificate of Residency</a></li>
+                            <li><a href="login.php">Certificate of Indigency</a></li>
+                            <li><a href="login.php">Business Permit</a></li>
+                            <li><a href="login.php">Barangay ID</a></li>
+                            <li><a href="login.php">Solo Parent Application</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6">
+                        <h4 class="mb-0 text-white">ABOUT</h4>
+                        <div class="line"></div>
+                        <ul>
+                            <li><a href="#officials">Barangay Officials</a></li>
+                            <li><a href="#announcements">Announcements</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-sm-6">
+                        <h4 class="mb-0 text-white">CONTACT US</h4>
+                        <div class="line"></div>
+                        <ul>
+                            <li>{{ ADDRESS|e }}</li>
+                            <li>{{ CONTACT_NO|e }}</li>
+                            <li>{{ EMAIL_ADDR|e }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="row g-4 justify-content-between">
+                    <div class="col-auto">
+                        <p class="mb-0">© Copyright Q-DOC. All Rights Reserved</p>
+                    </div>
+
+                    <div class="col-auto">
+                        <p class="mb-0">Designed By <a href="#">GROUP13</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="./assets/js/main.js"></script>
+</body>
+
+</html>

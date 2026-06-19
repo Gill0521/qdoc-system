@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Announcements | Q-DOC</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=25">
+
+    <style>
+        /* --- GLOBAL LAYOUT --- */
+        body { background-color: #F4F7FA; min-height: 100vh; display: flex; font-family: 'Poppins', sans-serif; overflow: hidden; }
+        
+        /* --- SIDEBAR --- */
+        .sidebar-admin {
+            width: 280px;
+            background: linear-gradient(180deg, #0A3E9F 0%, #062a6e 100%);
+            color: white;
+            display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+        }
+        .sidebar-header { padding: 25px; flex-shrink: 0; }
+        .brand-title { font-weight: 600; font-size: 1.3rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+        .sidebar-nav { flex: 1; padding: 0 7px; overflow-y: auto; scrollbar-width: none; }
+        .sidebar-nav::-webkit-scrollbar { display: none; }
+        .nav-link { color: rgba(255,255,255,0.7); font-size: 0.90rem; padding: 10px 18px; border-radius: 12px; margin-bottom: 5px; display: flex; align-items: center; transition: all 0.3s ease; font-weight: 500; }
+        .nav-link i { font-size: 1.20rem; margin-right: 12px; width: 24px; text-align: center; transition: 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(3px); }
+        .nav-link.active { background: white; color: #0A3E9F; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .nav-link.active i { color: #0A3E9F; }
+        
+        .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+        .user-card { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; text-decoration: none; color: white; transition: 0.3s; margin-bottom: 12px; }
+        .user-card:hover { background: rgba(255,255,255,0.08); }
+        .sidebar-user-avatar { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); }
+        .sidebar-user-initials { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.3); font-size: 1rem;  }
+        .user-info { overflow: hidden; }
+        .user-info h6 { margin: 0; font-size: 0.95rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-info small { font-size: 0.75rem; color: rgba(255,255,255,0.6); display: block; letter-spacing: 0.5px; }
+        .logout-btn-sidebar { display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.1); color: white; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .logout-btn-sidebar:hover { background: #dc3545; border-color: #dc3545; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content-admin { flex: 1; margin-left: 280px; padding: 2rem; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; width: calc(100% - 280px); }
+        .announcement-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.2s; overflow: hidden; display: flex; flex-direction: column; }
+        .announcement-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); border-color: #0A3E9F; }
+        .announcement-header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .announcement-body { padding: 0 20px 20px; flex-grow: 1; }
+        .announcement-footer { padding: 15px 20px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .status-badge { font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 30px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-published { background: #dcfce7; color: #166534; }
+        .status-hidden { background: #f1f5f9; color: #64748b; }
+
+        @media (max-width: 991px) {
+            .sidebar-admin { display: none; } 
+            .main-content-admin { margin-left: 0; width: 100%; padding: 1.5rem; overflow: visible; height: auto; min-height: 100vh; }
+            body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-admin d-none d-lg-flex">
+        <div class="sidebar-header">
+            <div class="brand-title">
+                <i class="ri-shield-user-fill me-2"></i> Admin Portal
+            </div>
+        </div>
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="users_admin.php"><i class="ri-group-line"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="managedocs_admin.php"><i class="ri-folder-open-line"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link active" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link" href="reports_admin.php"><i class="ri-pie-chart-line"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="logs_admin.php"><i class="ri-history-line"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+        </div>
+        <div class="sidebar-footer">
+            <a href="profile_admin.php" class="user-card">
+                
+                    {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="User" class="sidebar-user-avatar">
+                
+                    {% else %}
+                    <div class="sidebar-user-initials">{{ initials }}</div>
+                    {% endif %}
+                
+                <div class="user-info">
+                    <h6>{{ admin_name|e }}</h6>
+                    <small>{{ '' }}</small>
+                </div>
+            </a>
+            <a href="logout.php" class="logout-btn-sidebar"><i class="ri-logout-box-r-line me-2"></i> Sign Out</a>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="mobileMenu">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-white"><i class="ri-admin-line me-2"></i> Admin Portal</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <ul class="nav flex-column p-3 gap-2 mb-auto">
+                <li class="nav-item"><a class="nav-link text-white" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold bg-primary rounded" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+            </ul>
+            <div class="p-3 border-top border-secondary bg-dark">
+                <a href="profile_admin.php" class="d-flex align-items-center text-white text-decoration-none mb-3">
+                    
+                        {% if db_pic %}
+                    <img src="{{ db_pic }}" class="sidebar-user-avatar me-2" style="border:none;">
+                    
+                    {% else %}
+                    <div class="sidebar-user-initials me-2" style="width:38px;height:38px;font-size:0.8rem;">{{ initials }}</div>
+                    {% endif %}
+                    
+                    <div><div class="fw-bold">{{ admin_name|e }}</div><small class="text-white-50">{{ admin_role }}</small></div>
+                </a>
+                <a class="btn btn-outline-danger w-100 btn-sm" href="logout.php"><i class="ri-logout-box-line me-2"></i> Sign Out</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content-admin">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark mb-1">Announcements</h3>
+                <p class="text-muted mb-0">Post updates for residents to see in their portal.</p>
+            </div>
+            <button class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" onclick="openModal()">
+                <i class="ri-add-line me-1"></i> Post Announcement
+            </button>
+        </div>
+
+        <div class="row g-4">
+            {% if announcements %}
+                {% for row in announcements %}
+                {% set statusClass = 'bg-success' if row.status == 'Published' else 'bg-secondary' %}
+                {% set statusIcon = 'ri-checkbox-circle-line' if row.status == 'Published' else 'ri-draft-line' %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="announcement-card h-100">
+                        <div class="announcement-header">
+                            <span class="status-badge {{ statusClass }}">
+                                <i class="{{ statusIcon }} me-1"></i> {{ row.status }}
+                            </span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light rounded-circle" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" onclick='openModal({{ row|tojson }})'><i class="ri-pencil-line me-2"></i>Edit</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{ row.id }})"><i class="ri-delete-bin-line me-2"></i>Delete</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="announcement-body">
+                            <h5 class="fw-bold text-dark mb-2">{{ row.title|e }}</h5>
+                            <p class="text-muted small mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ row.content|e }}
+                            </p>
+                        </div>
+                        <div class="announcement-footer">
+                            <small class="text-muted">
+                                <i class="ri-time-line me-1"></i> {{ row.created_at|fmt_date('%b %d, %Y') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <div class="opacity-25 mb-3"><i class="ri-megaphone-line" style="font-size: 4rem;"></i></div>
+                    <h5 class="text-muted fw-bold">No Announcements Yet</h5>
+                    <p class="text-muted small">Click "Post Announcement" to create your first update.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div> 
+
+    <div class="modal fade" id="announcementModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Post Announcement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-4">
+                    <input type="hidden" name="announcement_id" id="announcement_id">
+                    <div class="mb-3">
+                        <label class="form-label text-uppercase small fw-bold text-muted">Title</label>
+                        <input type="text" name="title" id="title" class="form-control bg-light border-0" placeholder="e.g. Barangay Assembly" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-uppercase small fw-bold text-muted">Content</label>
+                        <textarea name="content" id="content" class="form-control bg-light border-0" rows="5" placeholder="Write your announcement details here..." required></textarea>
+                    </div>
+                    <div class="form-check form-switch p-3 bg-light rounded d-flex align-items-center gap-2">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="is_published" id="is_published" checked style="width: 2.5em; height: 1.25em;">
+                        <div>
+                            <label class="form-check-label fw-bold text-dark mb-0" for="is_published">Publish Immediately</label>
+                            <div class="small text-muted" style="font-size: 0.75rem;">If unchecked, it will be saved as Hidden/Draft.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light fw-bold text-muted px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="save_announcement" class="btn btn-primary fw-bold px-4 rounded-pill">Post Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow rounded-4">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3 text-danger"><i class="ri-delete-bin-line" style="font-size: 3rem;"></i></div>
+                    <h5 class="fw-bold mb-2">Delete Post?</h5>
+                    <p class="text-muted small mb-4">This action cannot be undone.</p>
+                    <form method="POST" class="d-flex gap-2 justify-content-center">
+                        <input type="hidden" name="delete_id" id="delete_id_input">
+                        <button type="button" class="btn btn-light w-50 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger w-50 fw-bold">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const modal = new bootstrap.Modal(document.getElementById('announcementModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        
+        function openModal(data = null) {
+            if (data) {
+                document.getElementById('modalTitle').innerText = 'Edit Announcement';
+                document.getElementById('announcement_id').value = data.id;
+                document.getElementById('title').value = data.title;
+                document.getElementById('content').value = data.content;
+                document.getElementById('is_published').checked = (data.status === 'Published');
+            } else {
+                document.getElementById('modalTitle').innerText = 'Post Announcement';
+                document.getElementById('announcement_id').value = '';
+                document.getElementById('title').value = '';
+                document.getElementById('content').value = '';
+                document.getElementById('is_published').checked = true;
+            }
+            modal.show();
+        }
+
+        function confirmDelete(id) {
+            document.getElementById('delete_id_input').value = id;
+            deleteModal.show();
+        }
+    </script>
+</body>
+</html>

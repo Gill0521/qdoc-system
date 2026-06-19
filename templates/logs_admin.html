@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs | Q-DOC</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=25">
+
+    <style>
+        /* --- GLOBAL LAYOUT --- */
+        body { background-color: #F4F7FA; min-height: 100vh; display: flex; font-family: 'Poppins', sans-serif; overflow: hidden; }
+        
+        /* --- SIDEBAR (Desktop) --- */
+        .sidebar-admin {
+            width: 280px;
+            background: linear-gradient(180deg, #0A3E9F 0%, #062a6e 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+        }
+        
+        .sidebar-header { 
+            padding: 25px; 
+            flex-shrink: 0; /* Prevents header from shrinking */
+        }
+        .brand-title { font-weight: 600; font-size: 1.3rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+
+        /* Navigation Area */
+        .sidebar-nav { 
+            flex: 1; /* Takes up remaining space */
+            padding: 0 7px; 
+            overflow-y: auto; /* Allows scroll if screen is too short */
+            scrollbar-width: none; /* Hide Scrollbar (Firefox) */
+        }
+        .sidebar-nav::-webkit-scrollbar { display: none; } /* Hide Scrollbar (Chrome/Safari) */
+
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.90rem;
+            padding: 10px 18px;
+            border-radius: 12px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .nav-link i { font-size: 1.20rem; margin-right: 12px; width: 24px; text-align: center; transition: 0.3s; }
+        
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(3px); }
+        
+        .nav-link.active { 
+            background: white; 
+            color: #0A3E9F; 
+            font-weight: 700; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+        }
+        .nav-link.active i { color: #0A3E9F; }
+
+        /* Sidebar Profile Footer */
+        .sidebar-footer {
+            padding: 20px;
+            background: rgba(0,0,0,0.15);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            flex-shrink: 0; 
+        }
+        
+        .user-card {
+            display: flex; align-items: center; gap: 12px; 
+            padding: 8px; border-radius: 12px;
+            text-decoration: none; color: white; 
+            transition: 0.3s; margin-bottom: 12px;
+        }
+        .user-card:hover { background: rgba(255,255,255,0.08); }
+        
+        .user-avatar { 
+            width: 45px; height: 45px; min-width: 45px;
+            border-radius: 50%; object-fit: cover; 
+            border: 2px solid rgba(255,255,255,0.3); 
+        }
+        .user-initials {
+            width: 45px; height: 45px; border-radius: 50%; min-width: 45px;
+            background: rgba(255,255,255,0.2); 
+            color: white; font-weight: 700; 
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid rgba(255,255,255,0.3); font-size: 1rem;
+        }
+
+        .user-info { overflow: hidden; }
+        .user-info h6 { margin: 0; font-size: 0.95rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-info small { font-size: 0.75rem; color: rgba(255,255,255,0.6); display: block; letter-spacing: 0.5px; }
+
+        .logout-btn-sidebar {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; padding: 10px;
+            background: rgba(255, 255, 255, 0.1); 
+            color: white; border-radius: 10px; 
+            font-size: 0.9rem; font-weight: 600; text-decoration: none;
+            transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .logout-btn-sidebar:hover { background: #dc3545; border-color: #dc3545; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content-admin { 
+            flex: 1; margin-left: 280px; padding: 2rem; 
+            height: 100vh; overflow-y: auto; display: flex; flex-direction: column; width: calc(100% - 280px);
+        }
+
+        /* --- TOOLBAR INPUTS --- */
+        .toolbar-input { font-size: 0.85rem; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; width: 130px; }
+        
+        .btn-circle {
+            width: 38px !important; height: 38px !important; padding: 0 !important; border-radius: 50% !important;
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none;
+        }
+        .btn-circle i { font-size: 1.2rem; line-height: 1; }
+
+        /* --- CARD & TABLE --- */
+        .logs-container { background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; padding: 20px; }
+        .table-responsive { flex: 1; overflow-y: auto; overflow-x: auto; padding-right: 5px; -webkit-overflow-scrolling: touch; }
+        
+        #logsTable { width: 100%; white-space: nowrap; } 
+        #logsTable thead th { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.8px; background-color: #fff; border-bottom: 2px solid #f1f5f9; padding: 1rem; position: sticky; top: 0; font-family: 'Poppins', sans-serif; }
+        #logsTable tbody td { vertical-align: middle; padding: 0.8rem 1rem; color: #334155; font-size: 0.9rem; border-bottom: 1px solid #f8fafc; }
+        #logsTable tbody tr:hover { background-color: #f8fafc; }
+
+        .role-badge { font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
+        .role-admin { background: #fce7f3; color: #be185d; }
+        .role-official { background: #e0f2fe; color: #0284c7; }
+        .role-resident { background: #dcfce7; color: #15803d; }
+
+        @media (max-width: 991px) {
+            .sidebar-admin { display: none; } 
+            .main-content-admin { margin-left: 0; width: 100%; padding: 1rem; height: auto; min-height: 100vh; overflow: visible; }
+            body { overflow: auto; }
+            .logs-container { height: 600px; }
+            .toolbar-group { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .toolbar-input { width: 48%; } 
+        }
+
+        #printHeader, #printFooter { display: none; } 
+        @media print {
+            @page { margin: 10mm; size: landscape; } 
+            .sidebar-admin, .offcanvas, .btn, .toolbar-input, .dataTables_filter, .dataTables_length, .dataTables_info, .dataTables_paginate, .screen-header-content, .mobile-menu-btn { display: none !important; }
+            body { background: white; font-family: 'Tinos', 'Times New Roman', serif; color: black; width: 100%; height: auto; overflow: visible; display: block; -webkit-print-color-adjust: exact; }
+            .main-content-admin { margin: 0; padding: 0; width: 100%; height: auto; overflow: visible; }
+            .logs-container { background: transparent !important; border: none; box-shadow: none; padding: 0; width: 100%; border-radius: 0; display: block; height: auto; }
+            .table-responsive { overflow: visible; width: 100%; display: block; }
+            #printHeader { display: block !important; text-align: center; margin-bottom: 15px; width: 100%; line-height: 1.2; position: relative; }
+            #printHeader h4 { margin: 0; font-weight: normal; font-size: 10pt; }
+            #printHeader h3 { margin: 5px 0 0 0; font-weight: bold; font-size: 12pt; text-transform: uppercase; }
+            .header-logo-left { position: absolute; left: 100px; top: 0; width: 70px; height: 70px; }
+            .header-logo-right { position: absolute; right: 100px; top: 0; width: 70px; height: 70px; }
+            .logs-container::before { content: ""; position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; background: url('{{ LOGO_RIGHT }}') no-repeat center; background-size: contain; opacity: 0.08; z-index: -1; }
+            #logsTable { width: 100% !important; border: 1px solid #000; border-collapse: collapse; font-size: 9pt; background: transparent !important; margin-top: 10px; table-layout: fixed; white-space: normal; }
+            #logsTable thead th { background: #eee !important; color: #000 !important; border: 1px solid #000; padding: 6px; text-align: center; }
+            #logsTable tbody td { border: 1px solid #000; padding: 5px; color: #000; vertical-align: top; background: transparent !important; white-space: normal !important; word-wrap: break-word !important; }
+            #logsTable th:nth-child(1) { width: 12%; } #logsTable th:nth-child(2) { width: 15%; } #logsTable th:nth-child(3) { width: 8%; }  #logsTable th:nth-child(4) { width: 10%; } #logsTable th:nth-child(5) { width: 55%; } 
+            .role-badge { border: none; padding: 0; color: #000 !important; background: none !important; }
+            #printFooter { display: block !important; margin-top: 20px; page-break-inside: avoid; }
+            .signature-line { border-bottom: 1px solid black; width: 250px; margin-bottom: 5px; margin-top: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-admin d-none d-lg-flex">
+        
+        <div class="sidebar-header">
+            <div class="brand-title">
+                <i class="ri-shield-user-fill me-2"></i> Admin Portal
+            </div>
+        </div>
+        
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="users_admin.php"><i class="ri-group-line"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="managedocs_admin.php"><i class="ri-folder-open-line"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link" href="reports_admin.php"><i class="ri-pie-chart-line"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link active" href="logs_admin.php"><i class="ri-history-line"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="profile_admin.php" class="user-card" title="View Profile">
+                
+                    {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="User" class="user-avatar">
+                
+                    {% else %}
+                    <div class="user-initials">{{ initials }}</div>
+                    {% endif %}
+                
+                
+                <div class="user-info">
+                    <h6>{{ admin_name|e }}</h6>
+                    <small>{{ '' }}</small>
+                </div>
+            </a>
+            
+            <a href="logout.php" class="logout-btn-sidebar">
+                <i class="ri-logout-box-r-line me-2"></i> Sign Out
+            </a>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-white" id="mobileMenuLabel"><i class="ri-admin-line me-2"></i> Admin Portal</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <ul class="nav flex-column p-3 gap-2 mb-auto">
+                <li class="nav-item"><a class="nav-link text-white" href="dashboard_admin.php"><i class="ri-dashboard-line me-2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="users_admin.php"><i class="ri-user-settings-line me-2"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="managedocs_admin.php"><i class="ri-folder-settings-line me-2"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="reports_admin.php"><i class="ri-file-chart-line me-2"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold bg-primary rounded" href="logs_admin.php"><i class="ri-history-line me-2"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="announcement_admin.php"><i class="ri-megaphone-line me-2"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="settings_admin.php"><i class="ri-settings-3-line me-2"></i> Settings</a></li>
+            </ul>
+
+            <div class="p-3 border-top border-secondary bg-dark">
+                <a href="profile_admin.php" class="d-flex align-items-center text-white text-decoration-none mb-3">
+                    
+                        {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="Admin" class="user-avatar me-2" style="border:none;">
+                    
+                    {% else %}
+                    <div class="user-initials me-2" style="width:38px;height:38px;font-size:0.8rem;">{{ initials }}</div>
+                    {% endif %}
+                    
+                    <div>
+                        <div class="fw-bold">{{ admin_name|e }}</div>
+                        <small class="text-white-50">{{ admin_role }}</small>
+                    </div>
+                </a>
+                <a class="btn btn-outline-danger w-100 btn-sm" href="logout.php"><i class="ri-logout-box-line me-2"></i> Sign Out</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content-admin">
+        
+        <div class="d-flex align-items-center justify-content-between mb-4 d-lg-none screen-header-content">
+            <h4 class="fw-bold text-dark mb-0">Activity Logs</h4>
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i class="ri-menu-line"></i> Menu
+            </button>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 screen-header-content gap-3">
+            <div class="d-none d-lg-block">
+                <h3 class="fw-bold text-dark mb-1">System Activity Logs</h3>
+                <p class="text-muted mb-0">Audit trail of all actions performed.</p>
+            </div>
+            
+            <div class="d-flex flex-wrap align-items-center gap-2 bg-white p-2 rounded-pill shadow-sm border ms-auto toolbar-group">
+                <input type="date" id="startDate" class="toolbar-input border-0 bg-light" value="{{ start_date }}" title="Start Date">
+                <span class="text-muted small">to</span>
+                <input type="date" id="endDate" class="toolbar-input border-0 bg-light" value="{{ end_date }}" title="End Date">
+                <div class="vr mx-1 d-none d-md-block"></div> 
+                <button id="btnFilter" class="btn btn-primary btn-circle" title="Apply Filter"><i class="ri-filter-3-line"></i></button>
+                <a href="logs_admin.php" class="btn btn-light border btn-circle" title="Reset"><i class="ri-refresh-line"></i></a>
+                <div class="vr mx-1 d-none d-md-block"></div> 
+                <button id="printLogBtn" class="btn btn-dark rounded-pill px-3 btn-sm fw-bold d-flex align-items-center gap-2" style="height: 38px;"><i class="ri-printer-line"></i> Print</button>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <div id="printHeader">
+                <img src="{{ LOGO_LEFT }}" class="header-logo-left" onerror="this.style.opacity=0">
+                <img src="{{ LOGO_RIGHT }}" class="header-logo-right" onerror="this.style.opacity=0">
+                <h4>Republic of the Philippines</h4><h4>Province of {{ PROVINCE }}</h4><h4>City of {{ CITY_NAME }}</h4>
+                <h3>BARANGAY {{ BRGY_NAME }}</h3><br><h3 style="text-decoration: underline;">SYSTEM ACTIVITY LOG</h3>
+                <p style="font-size: 10pt; margin-top: 5px;">Generated on: <span id="printDate"></span></p>
+            </div>
+
+            <div class="table-responsive">
+                <table id="logsTable" class="table table-hover w-100">
+                    <thead>
+                        <tr><th>Timestamp</th><th>User Name</th><th>Role</th><th>Action</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        {% if rows %}
+                            {% for row in rows %}
+                            {% set roleClass = 'role-admin' if row.role == 'Admin' else ('role-official' if row.role == 'Official' else 'role-resident') %}
+                            <tr>
+                                <td data-order="{{ row.created_at }}" class="text-secondary fw-bold">{{ row.created_at|log_time }}</td>
+                                <td class="fw-bold text-dark">{{ row.fullname or 'System' }}</td>
+                                <td><span class="role-badge {{ roleClass }}">{{ row.role or 'System' }}</span></td>
+                                <td class="fw-bold text-primary">{{ row.action }}</td>
+                                <td class="text-muted small">{{ row.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center p-5 text-muted">No activity logs found.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="printFooter">
+                <div class="row">
+                    <div class="col-6">
+                        <p style="margin-bottom: 5px;">Checked by:</p>
+                        <div class="signature-line"></div>
+                        <p class="fw-bold text-uppercase mb-0">{{ admin_name|e }}</p>
+                        <p class="small fst-italic">System Administrator</p>
+                    </div>
+                    <div class="col-6 text-end align-self-end">
+                        <p class="small text-muted fst-italic">Official Q-DOC Audit Trail</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#logsTable').DataTable({
+                "order": [[ 0, "desc" ]],
+                "pageLength": 15,
+                "language": { "search": "", "searchPlaceholder": "Search logs..." },
+                "dom": '<"d-flex justify-content-end mb-2"f>t<"d-flex justify-content-between mt-3"ip>'
+            });
+
+            $('#btnFilter').click(function() {
+                var start = $('#startDate').val();
+                var end = $('#endDate').val();
+                if(start && end) { window.location.href = "logs_admin.php?start=" + start + "&end=" + end; } 
+                else { alert("Please select both a Start Date and End Date."); }
+            });
+
+            $('#printLogBtn').click(function() {
+                // 1. Set Date for Print View
+                document.getElementById('printDate').innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                // 2. Use AJAX to call your PHP logger
+                $.post('ajax_log.php', {
+                    action: 'Print Logs',
+                    description: 'Admin printed the System Activity Logs.'
+                }).always(function() {
+                    // 3. Open Print Window (Run this regardless of log success)
+                    window.print();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

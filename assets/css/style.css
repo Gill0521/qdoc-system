@@ -1,0 +1,905 @@
+/* FONTS */
+@import url(../css/satoshi.css);
+
+/* VARIABLES */
+:root {
+    --c-dark: #212529;
+    --c-brand: #0A3E9F;
+    --c-brand-light: #4572C4;
+    --c-brand-rgb: 10, 62, 159;
+    --c-body: #00000;
+    --font-base: "Satoshi", sans-serif;
+    --box-shadow: 0px 15px 25px rgba(0,0,0,0.08);
+    --transition: all 0.5s ease;
+}
+
+/* RESET & HELPERS */
+body {
+    font-family: var(--font-base);
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--c-body);
+}
+
+h1,h2,h3,h4,
+.h1, .h2, .h3, .h4 {
+    font-weight: 750px;
+    color: var(--c-dark);
+}
+
+h5,h6,
+.h5, .h6 {
+    font-weight: 650px;
+    color: var(--c-dark);
+}
+
+a {
+    text-decoration: none;
+    color: var(--c-brand);
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--c-brand-light);
+}
+
+img {
+    max-width: 75%;
+    height: auto;
+}
+
+.section-padding {
+    padding-top: 140px;
+    padding-bottom: 140px;
+}
+
+.theme-shadow {
+    box-shadow: var(--box-shadow);
+}
+
+/* IMAGE ZOOM */
+.image-zoom {
+    position: relative;
+    overflow: hidden;
+}
+
+.image-zoom-wrapper {
+    overflow: hidden;
+    position: relative;
+}
+
+.image-zoom-wrapper img {
+    transition: var(--transition);
+}
+
+.image-zoom:hover .image-zoom-wrapper img {
+    transform: scale(1.1);
+}
+
+.text-yellow {
+  color: yellow;
+}
+
+
+/* NAVBAR */
+.navbar {
+    box-shadow: var(--box-shadow);
+}
+
+.navbar-nav .nav-link {
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--c-dark);
+}
+
+.navbar-nav .nav-link.active {
+    color: var(--c-brand);
+}
+
+.navbar-brand img {
+    width: 140px;
+    height: auto;
+}
+
+.navbar-gradient {
+    background: linear-gradient(to right, rgba(10, 62, 159, 1), rgba(42, 90, 179, 1), rgba(69, 114, 196, 1));
+}
+
+.navbar-gradient .nav-link {
+    color: white !important;
+}
+
+.navbar-gradient .navbar-brand {
+    color: white !important;
+}
+
+/* BUTTON */
+.btn {
+    font-weight: 800;
+    font-size: 15px;
+    text-transform: uppercase;
+    border-radius: 30px;
+    padding: 10px 24px;
+}
+
+.btn i {
+  margin-right: 8px;        
+  font-size: 18px;          
+  vertical-align: middle;   
+}
+
+.btn-brand {
+    background-color: var(--c-brand);
+    border-color: var(--c-brand);
+    color: white;
+}
+
+.btn-brand:hover {
+    background-color: var(--c-brand-light);
+    border-color: var(--c-brand-light);
+    color: white;
+}
+
+.btn-brand1 {
+    background-color: yellow;
+    border-color: yellow;
+    color: var(--c-dark);
+}
+
+.btn-brand1:hover {
+    background-color: var(--c-brand-light);
+    border-color: var(--c-brand-light);
+    color: white;
+}
+
+/* HERO */
+#hero {
+    background: linear-gradient(to right, rgba(10, 62, 159, 1), rgba(42, 90, 179, 1), rgba(69, 114, 196, 1));
+    background-position: center;
+    background-size: cover;
+}
+
+/* SECTION TITLE */
+.section-title {
+    margin-bottom: 60px;
+}
+
+.section-title .line {
+    width: 60px;
+    height: 4px;
+    background-color: var(--c-brand);
+    margin: 16px auto 24px auto;
+}
+
+.section-title p {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#about img {
+    max-width: 80%;
+    height: auto;
+}
+
+/* ICONBOX */
+.iconbox {
+    width: 70px;
+    height: 70px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--c-brand-rgb), 0.1);
+    color: var(--c-brand);
+    font-size: 34px;
+    flex: none;
+}
+
+/* SERVICE */
+.service {
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.service::after {
+    content: "";
+    width: 25px;
+    height: 30px;
+    background: rgba(var(--c-brand-rgb), 0.2);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    transition: var(--transition);
+}
+
+.service:hover::after {
+    width: 100%;
+    height: 100%;
+    background: var(--c-brand);
+    z-index: -1;
+}
+
+.service:hover h4,
+.service:hover p {
+    color: white;
+}
+
+.service:hover .iconbox {
+    background-color: rgba(255,255,255,0.2);
+    color: white;
+}
+
+/* OFFICIALS */
+.official-member-content {
+    background-color: var(--c-brand);
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    width: calc(100% - 50px);
+    transform: translateX(-50%);
+    padding: 24px;
+    transition: var(--transition);
+    opacity: 0;
+}
+
+.official-member:hover .official-member-content {
+    opacity: 1;
+    bottom: 24px;
+}
+
+/* CONTACT */
+#contact {
+    position: relative;
+    z-index: 2;
+}
+
+#contact::after {
+    content: "";
+    width: 100%;
+    height: 70%;
+    background: linear-gradient(rgba(var(--c-brand-rgb), 0.8), rgba(var(--c-brand-rgb), 0.8)), url(../images/hero-1.jpg);
+    background-position: center;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+#contact .form-control {
+    border-radius: 0;
+}
+
+#contact .form-control:focus {
+    box-shadow: none;
+    border-color: var(--c-brand);
+}
+
+/* FOOTER */
+footer {
+    padding-top: 100px;
+}
+
+.footer-top {
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+footer li,
+footer p,
+footer a {
+    color: rgba(255,255,255,0.7);
+}
+
+footer ul {
+    list-style: none;
+    padding: 0;
+}
+
+footer .line {
+    width: 40px;
+    height: 4px;
+    background-color: var(--c-brand);
+    margin-top: 12px;
+    margin-bottom: 24px;
+}
+
+footer .footer-top img {
+    width: 150px;
+    height: auto;
+}
+
+.social-icons a {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+}
+
+.social-icons a:hover {
+    background-color: var(--c-brand);
+    color: white;
+}
+
+/* REGISTER PAGE */
+.register-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        to right,
+        rgba(10, 62, 159, 1),
+        rgba(42, 90, 179, 1),
+        rgba(69, 114, 196, 1)
+    ) !important;
+    background-position: center;
+    background-size: cover;
+    position: relative;
+    padding: 2rem 0;
+}
+
+/* Dark overlay */
+.register-page .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 0;
+}
+
+/* Container above overlay */
+.register-page .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Left Info Text */
+.register-page .col-lg-6.text-white {
+    color: #fff;
+}
+
+/* Register Card */
+.register-card {
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border-radius: 1rem;
+    background-color: #fff;
+    padding: 2rem;
+}
+
+/* Scrollbar */
+.register-card::-webkit-scrollbar {
+    width: 6px;
+}
+.register-card::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+/* Radio button styles */
+.btn-check:checked + .btn-outline-primary {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+
+/* Responsive text alignment */
+@media (max-width: 991px) {
+    .register-page .col-lg-6.text-white {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+}
+
+/* LOGIN PAGE */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        to right,
+        rgba(10, 62, 159, 1),
+        rgba(42, 90, 179, 1),
+        rgba(69, 114, 196, 1)
+    ) !important;
+    background-position: center;
+    background-size: cover;
+    position: relative;
+    padding: 2rem 0;
+}
+
+/* Dark overlay */
+.login-page .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 0;
+}
+
+/* Container above overlay */
+.login-page .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Left Info Text */
+.login-page .col-lg-6.text-white {
+    color: #fff;
+}
+
+/* Login Card */
+.login-card {
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border-radius: 1rem;
+    background-color: #fff;
+    padding: 2rem;
+}
+
+/* Scrollbar */
+.login-card::-webkit-scrollbar {
+    width: 6px;
+}
+.login-card::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+/* Radio button styles */
+.btn-check:checked + .btn-outline-primary {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+
+/* Responsive text alignment */
+@media (max-width: 991px) {
+    .login-page .col-lg-6.text-white {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+}
+
+/* =========================================
+   RESIDENT PORTAL DASHBOARD
+   ========================================= */
+
+/* 1. Welcome Section */
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #212529;
+}
+
+.welcome-title span {
+    color: #0A3E9F; /* Brand Blue */
+    font-weight: 800;
+}
+
+/* 2. Date/Time Widget */
+.datetime-box {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #555;
+    transition: all 0.3s ease;
+}
+
+.datetime-box:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
+    transform: translateY(-2px);
+}
+
+.datetime-box .time {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+/* 3. Modern Action Cards (Renamed back to .action-card) */
+.action-card {
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.05); 
+    border-radius: 16px; 
+    padding: 1.5rem;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02); 
+    display: block;
+    text-decoration: none !important;
+    color: inherit;
+    cursor: pointer;
+}
+
+.action-card:hover {
+    transform: translateY(-8px); 
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); 
+    border-color: transparent;
+}
+
+/* 4. Icon Boxes (Glassmorphism Effect) */
+.icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* Icon Animation on Card Hover */
+.action-card:hover .icon-box {
+    transform: scale(1.1) rotate(5deg); 
+}
+
+/* Icon Color Variants */
+.icon-primary { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
+.icon-success { background-color: rgba(25, 135, 84, 0.1); color: #198754; }
+.icon-warning { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
+
+/* 5. Announcement List Items */
+.announcement-item {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #0d6efd; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.announcement-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px); 
+}
+
+/* Announcement Color Variants */
+.announcement-item.success { border-left-color: #198754; }
+.announcement-item.danger { border-left-color: #dc3545; }
+/* DASHBOARD BRGY OFFICIAL */
+
+/* DASHBOARD CARDS */
+.dashboard-card {
+    padding: 20px;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform .2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.dashboard-card h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.dashboard-card h2 {
+    margin-top: 8px;
+}
+
+.c1 h1 {color: #B4169A !important;}
+.c2 h1 {color: #6574EC !important;}
+.c3 h1 {color: #BF6A02 !important;}
+.c4 h1 {color: #E8B931 !important;}
+.c5 h1 {color: #14AE5C !important;}
+.c6 h1 {color: #EC221F !important;}
+
+/* C1: Total Residents (Purple/Magenta) */
+.c1 { border-top: 6px solid #B4169A; }
+.c1 i { color: #B4169A; background: rgba(180, 22, 154, 0.1); padding: 12px; border-radius: 8px; }
+
+/* C2: Pending Residents (Indigo) */
+.c2 { border-top: 6px solid #6574EC; }
+.c2 i { color: #6574EC; background: rgba(101, 116, 236, 0.1); padding: 12px; border-radius: 8px; }
+
+/* C3: Total Volume (Orange) */
+.c3 { border-top: 6px solid #BF6A02; }
+.c3 i { color: #BF6A02; background: rgba(191, 106, 2, 0.1); padding: 12px; border-radius: 8px; }
+
+/* C4: Pending Requests (Yellow/Gold) */
+.c4 { border-top: 6px solid #E8B931; }
+.c4 i { color: #E8B931; background: rgba(232, 185, 49, 0.1); padding: 12px; border-radius: 8px; }
+
+/* C5: Completed (Green) */
+.c5 { border-top: 6px solid #14AE5C; }
+.c5 i { color: #14AE5C; background: rgba(20, 174, 92, 0.1); padding: 12px; border-radius: 8px; }
+
+/* C6: Rejected (Red) */
+.c6 { border-top: 6px solid #EC221F; }
+.c6 i { color: #EC221F; background: rgba(236, 34, 31, 0.1); padding: 12px; border-radius: 8px; }
+
+
+/* ADMIN PORTAL DASHBOARD */
+/* 1. Fix Box Sizing: Ensures padding doesn't add to the 250px width */
+.sidebar-admin {
+    width: 250px;
+    background: linear-gradient(180deg, #0A3E9F 0%, #062a6e 100%);
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 20px;
+    box-sizing: border-box; 
+    z-index: 1000;
+}
+
+/* 2. Fix Main Content Overflow */
+.main-content-admin { 
+    margin-left: 250px; 
+    padding: 30px;
+    /* CRITICAL FIXES FOR EXPANSION: */
+    width: calc(100% - 250px); 
+    overflow-x: hidden; 
+    box-sizing: border-box;
+}
+
+.sidebar-admin .nav-link { 
+    color: rgba(255,255,255,0.7); 
+    font-size: 1rem; 
+    margin-bottom: 10px; 
+    border-radius: 8px; 
+    transition: 0.3s; 
+    display: block; 
+    text-decoration: none;
+}
+
+.sidebar-admin .nav-link:hover, 
+.sidebar-admin .nav-link.active { 
+    background: rgba(255,255,255,0.15); 
+    color: #fff; 
+}
+
+/* 3. Fix Card Containment */
+.dashboardcard-admin {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border: none;
+    transition: transform 0.3s ease;
+    /* CRITICAL FOR CHARTS: */
+    position: relative; 
+    overflow: hidden;   
+}
+
+.dashboardcard-admin:hover { 
+    transform: translateY(-5px); 
+}
+
+.alert-card {
+    background: #fff;
+    border-left: 4px solid #0A3E9F;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* 1. Hero Section (Gradient Background) */
+.hero-section-pendingstatus {
+    
+    background: linear-gradient(135deg, rgba(10, 62, 159, 1) 0%, rgba(69, 114, 196, 1) 100%);
+    color: white;
+    padding-bottom: 100px; 
+    padding-top: 20px;
+}
+
+/* 2. Status Badge */
+.status-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px 15px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(5px);
+    margin-bottom: 15px;
+}
+
+/* 3. The Floating Card */
+.status-card {
+    background: white;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 50px 50px rgba(0,0,0,0.08);
+    margin-top: -80px; /* Overlap effect */
+    padding: 40px;
+    position: relative;
+    z-index: 10;
+}
+
+/* 4. Custom Stepper Styling */
+.stepper-wrapper {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+/* The grey background line */
+.stepper-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 20px; 
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: #e9ecef;
+    z-index: 1;
+}
+
+/* The Colored Progress Line (Dynamic width) */
+.progress-line {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    height: 4px;
+    background-color: #198754; 
+    z-index: 2;
+    transition: width 0.5s ease;
+}
+
+/* Pending State Line Color */
+.progress-line.processing {
+    background: linear-gradient(90deg, #198754 50%, #0d6efd 50%);
+}
+
+.step-item {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    width: 120px; 
+}
+
+.step-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 3px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px auto;
+    font-size: 1.2rem;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+/* Step States */
+.step-item.completed .step-circle {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+.step-item.active .step-circle {
+    background-color: #0d6efd; 
+    border-color: #0d6efd;
+    color: white;
+    box-shadow: 0 0 0 5px rgba(13, 110, 253, 0.2); 
+}
+
+.step-item.rejected .step-circle {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    color: #212529;
+}
+
+.step-desc {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.step-item.active .step-desc {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.step-item.completed .step-desc {
+    color: #198754;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section { padding-bottom: 80px; }
+    .status-card { margin-top: -60px; padding: 20px; }
+    .stepper-wrapper { gap: 10px; }
+    .step-title { font-size: 0.8rem; }
+    .step-desc { font-size: 0.7rem; }
+}
+/* Notification Bell Circle Style */
+.notification-circle {
+    width: 42px; 
+    height: 42px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; 
+    border: 2px solid rgba(255, 255, 255, 0.3); 
+    color: white;
+    text-decoration: none; 
+    transition: all 0.3s ease; 
+}
+
+.notification-circle:hover, 
+.notification-circle[aria-expanded="true"] {
+    background-color: rgba(255, 255, 255, 0.15); 
+    border-color: rgba(255, 255, 255, 0.9); 
+    color: white;
+}
+
+/* Adjust icon size to fit nicely inside the circle */
+.notification-circle i {
+    font-size: 1.3rem;
+}
+
+.notif-badge {
+        position: absolute;
+        top: 0px !important; 
+        right: 0px !important;
+        font-size: 0.65rem;
+        width: 18px; 
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translate(25%, -25%);
+        z-index: 10;
+    }
+/* Style for Unread Items in the list */
+.unread-item {
+    background-color: #f0f7ff; 
+    border-left: 3px solid #0d6efd;
+}
+
+/* Change Dropdown Menu Option Hover Color */
+.dropdown-item:hover {
+    background-color: #eef2ff; 
+    color: #0A3E9F; 
+}
+
+/* Optional: Change the icon color on hover too */
+.dropdown-item:hover i {
+    color: #0A3E9F !important; 
+}

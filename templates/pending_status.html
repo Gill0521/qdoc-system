@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Account Status | Resident Portal</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=25">
+</head>
+<body data-bs-spy="scroll" data-bs-target=".navbar">
+
+    <nav class="navbar navbar-expand-lg sticky-top navbar-gradient">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="#">
+                <i class="ri-community-line me-2" style="font-size: 1.5rem;"></i>
+                Resident Portal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex align-items-center ms-auto gap-5">
+
+                    <ul class="navbar-nav d-flex flex-row gap-3">
+                        <li class="nav-item"><a class="nav-link text-white" href="pending_status.php">Home</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="pending_status.php">Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="pending_status.php">Requests</a></li>
+                    </ul>
+
+                    <a href="logout.php" class="btn btn-light fw-bold">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section-pendingstatus pt-5">
+        <div class="container">
+            
+            <div class="text-center text-md-start">
+                <div class="status-badge text-white border border-light border-opacity-25">
+                    <i class="ri-shield-user-line"></i> Account Status
+                </div>
+                <h1 class="display-5 fw-bold mb-2 text-yellow">Account Under Review</h1>
+                <p class="lead text-white-50" style="max-width: 600px;">
+                    Hello, <span class="fw-semibold text-white">{{ '' }}</span>. Your account is under review.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="status-card text-center">
+            
+            <h5 class="class= mb-5 lh-base text-muted">Your account registration is currently being processed. You will receive an email notification once your account has been approved by our administrators.</h5>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    
+                    <div class="stepper-wrapper">
+                        
+                        
+                        <div class="progress-line" id="progressLine" 
+                            style="width: {{ line_width }}; background-color: {{ line_color }};">
+                        </div>
+
+                        <div class="step-item completed">
+                            <div class="step-circle">
+                                <i class="ri-check-line"></i>
+                            </div>
+                            <div class="step-title">Registration</div>
+                            <div class="step-desc">Completed</div>
+                        </div>
+
+                        <div class="step-item {{ '' }}" id="step2">
+                            <div class="step-circle">
+                                
+                                    <i class="ri-loader-4-line ri-spin"></i>
+                                
+                                    <i class="ri-check-line"></i>
+                                
+                            </div>
+                            <div class="step-title">Review</div>
+                            <div class="step-desc" id="text2">
+                                {{ '' }}
+                            </div>
+                        </div>
+
+                        <div class="step-item " id="step3">
+                            <div class="step-circle">
+                                
+                                    <i class="ri-check-double-line"></i>
+                                
+                                    <i class="ri-close-line"></i>
+                                
+                                    <i class="ri-lock-line"></i>
+                                
+                            </div>
+                            <div class="step-title">Approval</div>
+                            <div class="step-desc" id="text3">
+                                
+                            </div>
+                        </div>
+
+                    </div> </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-top">
+                
+                    <div class="alert alert-light border d-inline-block text-muted">
+                        <i class="ri-time-line me-2 text-warning"></i> 
+                        Average review time: <strong>24 - 48 hours</strong>
+                    </div>
+                
+                    <div class="alert alert-danger d-inline-block">
+                        <i class="ri-error-warning-line me-2"></i> 
+                        Action Required: Please visit the Barangay Office.
+                    </div>
+                
+             </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    function updateStatusUI() {
+        fetch('check_status.php')
+            .then(res => res.json())
+            .then(data => {
+                const status = data.status;
+
+                // 1. Handle Logged Out (Timeout)
+                if (status === 'logged_out') {
+                    window.location.href = 'login.php';
+                    return;
+                }
+
+                const step2 = document.getElementById('step2');
+                const step3 = document.getElementById('step3');
+                const text2 = document.getElementById('text2');
+                const text3 = document.getElementById('text3');
+                const progressLine = document.getElementById('progressLine');
+
+                if (status === 'Pending') {
+                    // Update Line
+                    progressLine.style.width = '50%';
+                    progressLine.style.backgroundColor = '#198754';
+                    
+                    // Update Step 2
+                    step2.className = 'step-item active';
+                    step2.querySelector('.step-circle').innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
+                    text2.textContent = 'In Progress';
+
+                    // Update Step 3
+                    step3.className = 'step-item';
+                    step3.querySelector('.step-circle').innerHTML = '<i class="ri-lock-line"></i>';
+                    text3.textContent = 'Pending';
+
+                } else if (status === 'Approved') {
+                    // Update Line
+                    progressLine.style.width = '100%';
+                    progressLine.style.backgroundColor = '#198754';
+
+                    // Update Step 2
+                    step2.className = 'step-item completed';
+                    step2.querySelector('.step-circle').innerHTML = '<i class="ri-check-line"></i>';
+                    text2.textContent = 'Completed';
+
+                    // Update Step 3
+                    step3.className = 'step-item completed';
+                    step3.querySelector('.step-circle').innerHTML = '<i class="ri-check-double-line"></i>';
+                    text3.textContent = 'Approved';
+                    
+                    // Redirect to Resident Welcome Page
+                    setTimeout(() => { window.location.href = 'welcomepage_rsdnt.php'; }, 2000);
+
+                } else if (status === 'Rejected') {
+                    // Update Line to Red
+                    progressLine.style.width = '100%';
+                    progressLine.style.backgroundColor = '#dc3545'; 
+
+                    // Update Step 2
+                    step2.className = 'step-item completed';
+                    step2.querySelector('.step-circle').innerHTML = '<i class="ri-check-line"></i>';
+                    text2.textContent = 'Completed';
+
+                    // Update Step 3
+                    step3.className = 'step-item rejected';
+                    step3.querySelector('.step-circle').innerHTML = '<i class="ri-close-line"></i>';
+                    text3.textContent = 'Rejected';
+                    
+                    // (Optional) You can reload the page to show the PHP alert message if it wasn't there before
+                    // location.reload(); 
+                }
+            })
+            .catch(err => console.error('Error fetching status:', err));
+    }
+
+    // 1. CALL IMMEDIATELY ON LOAD (This fixes the delay)
+    updateStatusUI();
+
+    // 2. Then keep checking every 3 seconds
+    setInterval(updateStatusUI, 3000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Track Requests | {{ BRGY_NAME }} Resident Portal</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=29">
+
+    <style>
+        .custom-card {
+            background: #fff; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.1); overflow: hidden;
+        }
+        .card-header-blue {
+            background: linear-gradient(to right, rgba(10, 62, 159, 1), rgba(42, 90, 179, 1), rgba(69, 114, 196, 1)) !important;
+            padding: 25px; color: white;
+        }
+        .search-card { background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 12px; padding: 20px; }
+
+        /* --- STEPPER CSS FIXED --- */
+        .stepper-wrapper { 
+            display: flex; justify-content: space-between; margin: 40px 0; position: relative; 
+        }
+        
+        /* GRAY LINE: Explicitly constrained to center of first and last dots */
+        .stepper-wrapper::before { 
+            content: ""; position: absolute; 
+            top: 20px; 
+            left: 40px;   /* Center of first dot */
+            right: 40px;  /* Center of last dot - This removes the excess on the right! */
+            width: auto;  /* Ensure width doesn't override left/right */
+            height: 4px; background: #e0e0e0; z-index: 0; 
+        }
+
+        /* GREEN LINE: Starts at center of first dot */
+        .progress-line { 
+            position: absolute; top: 20px; 
+            left: 40px; /* Center of first dot */
+            height: 4px; background: #198754; z-index: 0; transition: width 0.5s ease; 
+        }
+        
+        .stepper-item { 
+            position: relative; z-index: 1; 
+            display: flex; flex-direction: column; align-items: center; 
+            flex: 0 0 80px; width: 80px; /* Fixed width */
+        }
+        
+        .step-counter { 
+            width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 4px solid #e0e0e0; 
+            color: #6c757d; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-bottom: 10px; transition: 0.3s; 
+        }
+        .step-name { font-size: 0.75rem; color: #6c757d; font-weight: 700; text-align: center; line-height: 1.2; }
+        
+        /* Active/Completed Styles */
+        .stepper-item.active .step-counter, .stepper-item.completed .step-counter { border-color: #198754; background: #198754; color: white; }
+        .stepper-item.active .step-name { color: #198754; }
+        
+        /* Badges */
+        .table-custom thead th { background-color: #f8f9fa; color: #6c757d; font-weight: 700; text-transform: uppercase; padding: 15px; }
+        .table-custom tbody td { padding: 15px; vertical-align: middle; border-bottom: 1px solid #f1f3f5; }
+        .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-approved { background: #cfe2ff; color: #084298; border: 1px solid #b6d4fe; }
+        .badge-processing { background: #e2e3e5; color: #41464b; border: 1px solid #d3d6d8; }
+        .badge-ready { background: #e0cffc; color: #3d0a91; border: 1px solid #c5b3e6; }
+        .badge-completed { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .badge-rejected { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+    </style>
+</head>
+
+<body data-bs-spy="scroll" data-bs-target=".navbar">
+
+    <nav class="navbar navbar-expand-lg sticky-top navbar-gradient">
+        <div class="container">
+            
+            <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="welcomepage_rsdnt.php">
+                <i class="ri-community-line me-2" style="font-size: 1.5rem;"></i>
+                Resident Portal
+            </a>
+
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                
+                <div class="dropdown">
+                    <a class="notification-circle" href="#" id="navMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ri-menu-line"></i> </a>
+                    
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2" aria-labelledby="navMenuDropdown" style="width: 200px;">
+                        <li><a class="dropdown-item rounded py-2" href="welcomepage_rsdnt.php"><i class="ri-home-line me-2 text-primary"></i> Home</a></li>
+                        <li><a class="dropdown-item rounded py-2" href="profile_rsdnt.php"><i class="ri-user-line me-2 text-primary"></i> Profile</a></li>
+                        <li><a class="dropdown-item rounded py-2" href="request_document.php"><i class="ri-file-add-line me-2 text-primary"></i> Request</a></li>
+                        <li><a class="dropdown-item rounded py-2 fw-bold" href="track_request.php"><i class="ri-map-pin-line me-2 text-primary"></i> Track</a></li>
+                        <li class="d-lg-none"><hr class="dropdown-divider"></li>
+                        <li class="d-lg-none"><a class="dropdown-item rounded py-2 text-danger" href="logout.php"><i class="ri-logout-box-line me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a class="notification-circle position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ri-notification-3-line"></i>
+                        
+                            <span class="badge rounded-pill bg-danger border border-light notif-badge">
+                                {{ unread_count }}
+                            </span>
+                        
+                    </a>
+                    
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3" aria-labelledby="notifDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <li class="dropdown-header fw-bold bg-white border-bottom d-flex justify-content-between align-items-center sticky-top">
+                            <span>Notifications</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ unread_count }} unread</small>
+                        </li>
+                        {% if notif_result %}
+                            {% for notif in notif_result %}
+                                {% set is_unread = 'fw-bold bg-light' if not notif.is_read else '' %}
+                                {% set req_id = notif.request_id if notif.request_id else '' %}
+                                <li>
+                                    <a class="dropdown-item py-3 border-bottom {{ is_unread }}" 
+                                       href="notif_read_and_redirect.php?notif_id={{ notif.id }}&req_id={{ req_id }}">
+                                        <div class="d-flex w-100 justify-content-between mb-1">
+                                            <strong class="small text-primary">
+                                                <i class="ri-circle-fill text-primary" style="font-size: 6px; vertical-align: middle;"></i> 
+                                                {{ notif.title|e }}
+                                            </strong>
+                                            <small class="text-muted" style="font-size: 0.7rem;">{{ notif.created_at|fmt_date('%b %d') }}</small>
+                                        </div>
+                                        <p class="mb-0 small text-secondary text-wrap" style="line-height: 1.3; font-size: 0.85rem;">
+                                            {{ notif.message|e }}
+                                        </p>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="p-4 text-center small text-muted">
+                                <i class="ri-notification-off-line d-block fs-4 mb-2 opacity-50"></i>
+                                No notifications yet
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <a href="logout.php" class="btn btn-light fw-bold btn-sm px-3 d-none d-lg-block rounded-pill">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                
+                    
+                    {% if view_mode == 'track' and tracking_data %}
+                    <a href="track_request.php" class="text-decoration-none text-muted mb-3 d-inline-block fw-bold small">
+                        <i class="ri-arrow-left-line me-1"></i> Back to List
+                    </a>
+
+                    <div class="custom-card">
+                        <div class="card-header-blue text-center">
+                            <h2 class="fw-bold text-white mb-0">{{ tracking_data.status }}</h2>
+                            <p class="mb-0 opacity-75 mt-2">Current Status</p>
+                        </div>
+                        <div class="p-5">
+                            <div class="row text-center mb-4">
+                                <div class="col-4 border-end">
+                                    <div class="small text-muted fw-bold">DOCUMENT</div>
+                                    <div class="fw-bold text-primary">{{ tracking_data.document_type }}</div>
+                                </div>
+                                <div class="col-4 border-end">
+                                    <div class="small text-muted fw-bold">REQUEST ID</div>
+                                    <div class="fw-bold text-dark">{{ request_tracking_id(tracking_data.id) }}</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="small text-muted fw-bold">PICKUP DATE</div>
+                                    <div class="fw-bold text-dark">{{ tracking_data.pickup_date|fmt_date('%b %d, %Y') }}</div>
+                                </div>
+                            </div>
+
+                            {% if tracking_data.official_notes %}
+                                <div class="alert alert-warning border-0 shadow-sm rounded-3 mb-5 d-flex align-items-start">
+                                    <i class="ri-information-fill fs-4 text-warning me-3 mt-1"></i>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1">Message from Barangay:</h6>
+                                        <p class="mb-0 text-secondary" style="white-space: pre-wrap;">{{ tracking_data.official_notes|e }}</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% set steps = ['Pending', 'Approved', 'Processing', 'Ready for Pickup', 'Completed'] %}
+                            {% set step_icons = {'Pending':'ri-time-line','Approved':'ri-checkbox-circle-line','Processing':'ri-loader-4-line','Ready for Pickup':'ri-inbox-archive-line','Completed':'ri-medal-line'} %}
+                            {% set current = steps.index(tracking_data.status) if tracking_data.status in steps else 0 %}
+                            <div class="stepper-wrapper">
+                                <div class="progress-line" style="width: {{ (current / 4 * 100)|round(0, 'floor') }}%;"></div>
+                                {% for label in steps %}
+                                    {% set idx = loop.index0 %}
+                                    <div class="stepper-item {{ 'completed' if idx < current else ('active' if idx == current else '') }}">
+                                        <div class="step-counter">
+                                            <i class="{{ step_icons[label] }}"></i>
+                                        </div>
+                                        <div class="step-name">{{ label }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if tracking_data.status == 'Rejected' %}
+                                <div class="alert alert-danger text-center"><h5 class="fw-bold">Request Rejected</h5><p>Please check the message above or contact the barangay hall for details.</p></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 class="fw-bold text-dark mb-0">My Requests</h3>
+                            <p class="text-muted small mb-0">Track the status of your submitted documents.</p>
+                        </div>
+                        <a href="request_document.php" class="btn btn-primary fw-bold shadow-sm">
+                            <i class="ri-add-line me-1"></i> New Request
+                        </a>
+                    </div>
+
+                    <div class="search-card mb-4">
+                        <form action="" method="GET" class="row g-3 align-items-center">
+                            <div class="col-md-auto"><label class="fw-bold text-dark"><i class="ri-search-line me-1"></i> Track ID:</label></div>
+                            <div class="col-md"><input type="text" name="req_id" class="form-control" placeholder="Enter Request ID" required></div>
+                            <div class="col-md-auto"><button type="submit" class="btn btn-dark fw-bold px-4">Track</button></div>
+                        </form>
+                    </div>
+
+                    {% if search_error %}
+                        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+                            <i class="ri-error-warning-fill me-2"></i> <strong>Request Not Found!</strong> We couldn't find that ID.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
+                    <div class="custom-card">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Request ID</th>
+                                        <th>Document</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th class="text-end pe-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if res_list %}
+                                        {% for row in res_list %}
+                                            <tr>
+                                                <td class="ps-4 fw-bold text-primary">{{ request_tracking_id(row.id) }}</td>
+                                                <td class="fw-semibold">{{ row.document_type }}</td>
+                                                <td class="small text-muted">{{ row.request_date|fmt_date('%b %d, %Y') }}</td>
+                                                <td><span class="badge rounded-pill {{ status_badge_class(row.status) }} px-3">{{ row.status }}</span></td>
+                                                <td class="text-end pe-4"><a href="track_request.php?req_id={{ row.id }}" class="btn btn-sm btn-outline-primary fw-bold">Track</a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr><td colspan="5" class="text-center p-5 text-muted">No requests found.</td></tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+            </div>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

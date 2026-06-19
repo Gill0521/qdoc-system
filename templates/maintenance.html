@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Mode | {{ BRGY_NAME }}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .maintenance-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+            border-top: 6px solid #0A3E9F;
+        }
+        .icon-container {
+            width: 100px;
+            height: 100px;
+            background: #eef2ff;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: #0A3E9F;
+            animation: pulse 2s infinite;
+        }
+        .icon-container i {
+            font-size: 3.5rem;
+        }
+        h1 {
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+        .contact-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            border: 1px dashed #cbd5e1;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(10, 62, 159, 0.2); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(10, 62, 159, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(10, 62, 159, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="maintenance-card">
+        <div class="icon-container">
+            <i class="ri-tools-fill"></i>
+        </div>
+
+        <h1>Under Maintenance</h1>
+        <p class="lead fw-bold text-primary mb-3">We'll be back shortly!</p>
+        
+        <p>
+            The <strong>{{ BRGY_NAME }} Q-DOC Portal</strong> is currently undergoing scheduled upgrades to serve you better. 
+            We apologize for the inconvenience.
+        </p>
+
+        <div class="contact-box">
+            <p class="mb-1 fw-bold text-uppercase small text-muted">Need urgent assistance?</p>
+            <div class="d-flex justify-content-center gap-3 mt-2">
+                
+                    <div class="d-flex align-items-center text-dark fw-bold">
+                        <i class="ri-phone-fill text-primary me-2"></i> 
+                        {{ sys_setting.contact_number }}
+                    </div>
+                
+                
+                
+                    <div class="d-flex align-items-center text-dark fw-bold">
+                        <i class="ri-mail-send-fill text-primary me-2"></i> 
+                        {{ sys_setting.email }}
+                    </div>
+                
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="login.php" class="btn btn-outline-primary rounded-pill px-4 fw-bold btn-sm">
+                <i class="ri-refresh-line me-1"></i> Try Again
+            </a>
+            
+            <div class="mt-3">
+                <a href="login.php?admin_access=1" class="text-decoration-none text-muted small" style="opacity: 0.5; font-size: 0.75rem;">
+                    <i class="ri-shield-keyhole-line"></i> Admin Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

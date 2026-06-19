@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify: {{ doc_type }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- GLOBAL SETUP --- */
+        body { background: #f0f2f5; font-family: 'Roboto', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+
+        /* --- VERIFICATION BADGE --- */
+        .verification-badge {
+            background: #28a745; color: white; padding: 12px 25px; border-radius: 50px;
+            font-weight: bold; font-size: 16px; margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); display: flex; align-items: center; gap: 10px;
+        }
+
+        /* --- CARD CONTAINER (Shared) --- */
+        .card-box {
+            width: 325px; background: white; border: 1px solid #ddd; border-radius: 8px;
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); margin-bottom: 20px; flex-shrink: 0;
+        }
+
+        /* --- HEADER STYLES --- */
+        .card-header { background: #1a3c6e; height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; color: white; position: relative; }
+        .header-triangle { position: absolute; right: 0; top: 0; width: 0; height: 0; border-style: solid; border-width: 0 40px 40px 0; border-color: transparent white transparent transparent; opacity: 0.1; }
+        .header-logos img { width: 28px; height: 28px; background: white; border-radius: 50%; object-fit: contain; }
+        .header-text { text-align: center; flex-grow: 1; line-height: 1; text-transform: uppercase; }
+        .header-text h1 { font-size: 6px; margin: 0; font-weight: normal; letter-spacing: 0.5px; }
+        .header-text h2 { font-size: 7px; margin: 2px 0; font-weight: bold; color: #ffcc00; }
+        .header-text h3 { font-size: 10px; margin: 0; font-weight: 900; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+
+        /* --- ID SPECIFIC STYLES --- */
+        .id-layout .card-box { height: 204px; } /* Fixed height only for ID cards */
+        .card-body { flex-grow: 1; padding: 8px; display: flex; gap: 8px; background: url('assets/images/brgy-logo.png') no-repeat center; background-size: 60%; position: relative; }
+        .card-body::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.88); z-index: 0; }
+        
+        .col-left { width: 75px; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+        .photo-frame { width: 70px; height: 70px; border: 2px solid #333; background: #ddd; margin-bottom: 4px; }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .signature-area { width: 100%; text-align: center; margin-top: auto; }
+        .sig-line { border-bottom: 1px solid #000; height: 10px; margin-bottom: 1px; }
+        .sig-label { font-size: 5px; font-weight: bold; }
+        
+        .col-right { flex-grow: 1; z-index: 1; position: relative; display: flex; flex-direction: column; }
+        .user-name { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 700; color: #000; text-transform: uppercase; line-height: 1.1; margin-bottom: 4px; }
+        .address-box { font-size: 6px; margin-bottom: 4px; line-height: 1.1; text-transform: uppercase; }
+        .address-box .label { font-weight: bold; color: #555; }
+        .info-grid { display: grid; grid-template-columns: auto 1fr; column-gap: 5px; row-gap: 1px; font-size: 6px; }
+        .label { font-weight: bold; color: #555; }
+        .val { font-weight: bold; color: #000; text-transform: uppercase; }
+        .dates-row { margin-top: 5px; font-size: 6px; font-weight: bold; color: #1a3c6e; display: flex; flex-direction: column; gap: 1px; }
+        .bottom-section { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; }
+        .captain-sig { text-align: center; margin-left: 5px; flex-grow: 1; }
+        .captain-name { font-size: 7px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
+        .captain-title { font-size: 5px; }
+        .qr-box { width: 45px; height: 45px; }
+        .qr-box img { width: 100%; height: 100%; }
+
+        /* --- CERTIFICATE SPECIFIC STYLES --- */
+        .cert-layout .card-body { flex-direction: column; align-items: center; padding: 20px; text-align: center; }
+        .cert-title { font-size: 18px; font-weight: bold; color: #1a3c6e; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #ffcc00; display: inline-block; z-index: 1;}
+        .cert-detail-box { width: 100%; background: rgba(255,255,255,0.9); border: 1px solid #eee; padding: 10px; margin-bottom: 10px; z-index: 1; text-align: left; }
+        .cert-label { font-size: 10px; color: #666; font-weight: bold; display: block; margin-bottom: 2px; }
+        .cert-value { font-size: 14px; font-weight: bold; color: #333; display: block; margin-bottom: 10px; text-transform: uppercase; }
+
+        /* Back Styles (ID ONLY) */
+        .back-header { background: #1a3c6e; height: 30px; color: white; display: flex; align-items: center; padding: 0 10px; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
+        .back-arrows { margin-left: auto; letter-spacing: -2px; opacity: 0.5; font-size: 10px; }
+        .back-body { padding: 10px; display: flex; justify-content: space-between; position: relative; flex-grow: 1; }
+        .emergency-box { width: 65%; font-size: 7px; z-index: 1; }
+        .emergency-title { color: #1a3c6e; font-weight: bold; font-style: italic; margin-bottom: 5px; font-size: 7px; }
+        .disclaimer { margin-top: 10px; font-size: 6px; font-weight: bold; font-style: italic; text-transform: uppercase; }
+        .back-logo-watermark { position: absolute; right: -15px; bottom: -15px; width: 100px; height: 100px; opacity: 0.2; z-index: 0; }
+        .return-footer { background: #f0f0f0; text-align: center; font-size: 5px; font-weight: bold; padding: 4px; text-transform: uppercase; border-top: 1px solid #ddd; }
+
+        .verify-text { color: #666; font-size: 13px; text-align: center; max-width: 300px; margin-top: 10px; line-height: 1.5; }
+        .verify-text strong { color: #1a3c6e; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="verification-badge">
+        <span>✅ Valid Document</span>
+    </div>
+
+    
+        <div class="id-layout">
+            <div class="card-box">
+                <div class="card-header">
+                    <div class="header-logos"><img src="assets/images/city-logo.png" onerror="this.style.opacity=0"></div>
+                    <div class="header-text">
+                        <h1>REPUBLIC OF THE PHILIPPINES</h1>
+                        <h2>CITY OF {{ CITY_NAME }}</h2>
+                        <h3>BARANGAY {{ BRGY_NAME }}</h3>
+                    </div>
+                    <div class="header-logos"><img src="assets/images/brgy-logo.png" onerror="this.style.opacity=0"></div>
+                    <div class="header-triangle"></div>
+                </div>
+
+                <div class="card-body">
+                    <div class="col-left">
+                        <div class="photo-frame"><img src="{{ profile_pic }}" onerror="this.src='assets/images/default-id.jpg'"></div>
+                        <div class="signature-area"><div class="sig-line"></div><div class="sig-label">SIGNATURE</div></div>
+                    </div>
+                    <div class="col-right">
+                        <div class="user-name">{{ fullname }}</div>
+                        <div class="address-box"><span class="label">ADDRESS:</span> {{ address }}</div>
+                        <div class="info-grid">
+                            <div class="label">BIRTHDATE:</div> <div class="val">{{ birthdate }}</div>
+                            <div class="label">SEX:</div> <div class="val">{{ sex }}</div>
+                            <div class="label">CIVIL STATUS:</div> <div class="val">{{ civil_status }}</div>
+                            <div class="label">STATUS:</div> <div class="val">RESIDENT</div>
+                        </div>
+                        <div class="dates-row">
+                            <div><span style="color:#555;">DATE ISSUED:</span> {{ date_issued }}</div>
+                            <div><span style="color:#555;">VALID UNTIL:</span> {{ valid_until }}</div>
+                        </div>
+                        <div class="bottom-section">
+                            <div class="captain-sig"><div class="captain-name">HON. JUAN DELA CRUZ</div><div class="captain-title">PUNONG BARANGAY</div></div>
+                            <div class="qr-box"><img src="{{ qr_url }}" alt="QR"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-box">
+                <div class="back-header"><span>ID NO. {{ id_no }}</span><span class="back-arrows">>>>>>>>>>>>>>></span></div>
+                <div class="back-body">
+                    <div class="emergency-box">
+                        <div class="emergency-title">IN CASE OF EMERGENCY</div>
+                        <div><strong>CONTACT PERSON:</strong></div><div style="border-bottom: 1px solid #ccc; height: 10px; margin-bottom: 5px;"></div>
+                        <div><strong>CONTACT NUMBER:</strong></div><div style="border-bottom: 1px solid #ccc; height: 10px; margin-bottom: 5px;"></div>
+                        <div class="disclaimer">" THIS IS NOT TRANSFERABLE "</div>
+                    </div>
+                    <img src="assets/images/brgy-logo.png" class="back-logo-watermark" onerror="this.style.opacity=0">
+                </div>
+                <div class="return-footer">IF FOUND PLEASE RETURN TO:<br>BARANGAY HALL, {{ BRGY_NAME }}, CITY OF {{ CITY_NAME }}</div>
+            </div>
+        </div>
+
+    
+        <div class="cert-layout">
+            <div class="card-box" style="height: auto; min-height: 350px;">
+                <div class="card-header">
+                    <div class="header-logos"><img src="assets/images/city-logo.png" onerror="this.style.opacity=0"></div>
+                    <div class="header-text">
+                        <h1>REPUBLIC OF THE PHILIPPINES</h1>
+                        <h2>CITY OF {{ CITY_NAME }}</h2>
+                        <h3>BARANGAY {{ BRGY_NAME }}</h3>
+                    </div>
+                    <div class="header-logos"><img src="assets/images/brgy-logo.png" onerror="this.style.opacity=0"></div>
+                </div>
+
+                <div class="card-body">
+                    <div class="cert-title">DOCUMENT VERIFIED</div>
+
+                    <div class="cert-detail-box">
+                        <span class="cert-label">DOCUMENT TYPE</span>
+                        <span class="cert-value" style="color:#1a3c6e; font-size: 16px;">{{ doc_type }}</span>
+
+                        <span class="cert-label">ISSUED TO</span>
+                        <span class="cert-value">{{ fullname }}</span>
+
+                        <span class="cert-label">PURPOSE</span>
+                        <span class="cert-value">{{ '' }}</span>
+
+                        <span class="cert-label">DATE ISSUED</span>
+                        <span class="cert-value">{{ date_issued }}</span>
+                    </div>
+
+                    <div style="margin-top: 10px; text-align: center;">
+                        <img src="{{ qr_url }}" style="width: 80px; height: 80px;">
+                        <div style="font-size: 10px; font-weight: bold; color: #555;">SCAN TO RE-VERIFY</div>
+                    </div>
+                </div>
+                
+                <div class="return-footer">OFFICIAL BARANGAY DOCUMENT SYSTEM</div>
+            </div>
+        </div>
+    
+
+    <div class="verify-text">
+        This page confirms the validity of <br>Reference No. <strong>{{ id_no }}</strong>.
+    </div>
+
+</body>
+</html>

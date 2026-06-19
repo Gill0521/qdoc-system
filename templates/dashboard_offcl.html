@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard | Barangay Official Portal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=27">
+    <style>
+    
+        
+        /* Activity Table */
+        .activity-card {
+            background: #fff; border-radius: 12px; padding: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
+        }
+        .table-custom thead th {
+            background-color: #f8f9fa; color: #6c757d; font-size: 0.85rem; font-weight: 700;
+            text-transform: uppercase; padding: 15px 20px; border-bottom: 1px solid #dee2e6;
+        }
+        .table-custom tbody td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f1f3f5; }
+        
+        /* Badges */
+        .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-approved { background: #cfe2ff; color: #084298; border: 1px solid #b6d4fe; }
+        .badge-processing { background: #e2e3e5; color: #41464b; border: 1px solid #d3d6d8; }
+        .badge-ready { background: #e0cffc; color: #3d0a91; border: 1px solid #c5b3e6; }
+        .badge-completed { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .badge-rejected { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+        
+        .badge-paid { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .badge-unpaid { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+    </style>
+</head>
+<body data-bs-spy="scroll" data-bs-target=".navbar">
+
+    <nav class="navbar navbar-expand-lg sticky-top navbar-gradient">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="#">
+                <i class="ri-government-line me-2" style="font-size: 1.5rem;"></i> Barangay Official
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex align-items-center ms-auto gap-5">
+                    <ul class="navbar-nav d-flex flex-row gap-3">
+                        <li class="nav-item"><a class="nav-link text-white active" href="dashboard_offcl.php">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white opacity-75" href="profile_offcl.php">Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white opacity-75" href="transactions_offcl.php">Requests</a></li>
+                    </ul>
+                    <a href="logout.php" class="btn btn-light fw-bold">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap">
+            <div>
+                <h1 class="welcome-title">Kumusta, <span style="color: #0A3E9F; font-weight: 800;">{{ first_name|e }}</span>!</h1>
+                <p class="lead">Manage document requests and account approvals.</p>
+            </div>
+            <div class="datetime-box mt-3 mt-lg-0 text-end p-3 rounded-4 shadow-sm bg-white">
+                <div id="current-date">...</div>
+                <div id="current-time" class="time fs-3 fw-bold">--:--</div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-md-4">
+                <div class="dashboard-card c1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-secondary small fw-bold">TOTAL RESIDENTS</h6>
+                        <i class="ri-team-fill fs-4"></i>
+                    </div>
+                    <h1 class="fw-bold mt-2">{{ stats.total_users }}</h1>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="dashboard-card c2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-secondary small fw-bold">PENDING RESIDENTS</h6>
+                        <i class="ri-user-add-fill fs-4"></i>
+                    </div>
+                    <h1 class="fw-bold mt-2">{{ stats.pending_users }}</h1>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="dashboard-card c3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-secondary small fw-bold">NEW REQUESTS</h6>
+                        <i class="ri-time-fill fs-4"></i>
+                    </div>
+                    <h1 class="fw-bold mt-2">{{ stats.pending_requests }}</h1>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="dashboard-card c4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-secondary small fw-bold">IN PROCESS / READY</h6>
+                        <i class="ri-loader-4-fill fs-4"></i>
+                    </div>
+                    <h1 class="fw-bold mt-2">{{ stats.active_requests }}</h1>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="dashboard-card c5">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-secondary small fw-bold">COMPLETED</h6>
+                        <i class="ri-checkbox-circle-fill fs-4"></i>
+                    </div>
+                    <h1 class="fw-bold mt-2">{{ stats.completed_requests }}</h1>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="dashboard-card c6">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-secondary small fw-bold">TOTAL VOLUME</h6>
+                        <i class="ri-bar-chart-fill fs-4"></i>
+                    </div>
+                    <h1 class="fw-bold mt-2">{{ stats.total_requests }}</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-end mb-3">
+                    <div><h5 class="fw-bold text-dark m-0">Recent Activity</h5><p class="text-secondary small mb-0">Latest incoming requests</p></div>
+                    <a href="transactions_offcl.php" class="text-decoration-none fw-bold small" style="color: #0A3E9F;">View All Transactions →</a>
+                </div>
+
+                <div class="activity-card">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Resident Name</th>
+                                    <th>Document</th>
+                                    <th>Date</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_res %}
+                                    {% for row in recent_res %}
+                                        <tr>
+                                            <td class="ps-4 fw-bold text-dark">{{ row.fullname }}</td>
+                                            <td>{{ row.document_type }}</td>
+                                            <td class="text-muted small">{{ row.request_date|fmt_date('%b %d, %Y') }}</td>
+                                            <td><span class="badge rounded-pill {{ payment_badge_class(row.payment_status) }} px-3 fw-normal">{{ payment_status_text(row.payment_status) }}</span></td>
+                                            <td><span class="badge rounded-pill {{ status_badge_class(row.status) }} px-3 py-2 fw-normal">{{ row.status }}</span></td>
+                                            <td class="text-end pe-4"><a href="transactions_offcl.php" class="btn btn-sm btn-light border"><i class="ri-arrow-right-line"></i></a></td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="6" class="text-center p-5 text-muted">No recent requests.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+    <script src="./assets/js/main.js"></script>
+
+    <script src="./assets/js/main.js"></script>
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+            let hours = now.getHours(); const minutes = now.getMinutes(); const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            document.getElementById('current-time').textContent = hours + ':' + (minutes < 10 ? '0' + minutes : minutes) + ' ' + ampm;
+        }
+        setInterval(updateDateTime, 1000); updateDateTime(); 
+    </script>
+    <script>
+        // Check account status every 5 seconds
+        setInterval(function() {
+            fetch('check_status.php')
+                .then(response => response.json())
+                .then(data => {
+                    
+                    // 1. Handle REJECTED Users
+                    if (data.status === 'Rejected') {
+                        if (data.role === 'Resident') {
+                            // Residents go to Pending Page
+                            window.location.href = 'pending_status.php'; 
+                        } else {
+                            // Officials go to Access Denied Page
+                            window.location.href = 'access_denied.php'; 
+                        }
+                    } 
+                    
+                    // 2. Handle LOGGED OUT Users
+                    else if (data.status === 'logged_out') {
+                        window.location.href = 'login.php';
+                    }
+                    
+                })
+                .catch(error => console.error('Error checking status:', error));
+        }, 5000); 
+    </script>
+</body>
+</html>

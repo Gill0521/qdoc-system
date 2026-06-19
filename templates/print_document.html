@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Print {{ doc_type }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- GLOBAL RESET --- */
+        * { box-sizing: border-box; }
+        body {
+            background: #555; /* Dark background for preview contrast */
+            display: flex; justify-content: center; padding: 40px;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .no-print-bar { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; gap: 10px; }
+        .btn {
+            background: #fff; color: #333; border: none; padding: 10px 20px; font-weight: bold;
+            cursor: pointer; border-radius: 5px; text-decoration: none; display: flex; align-items: center; gap: 5px;
+        }
+        .btn:hover { background: #eee; }
+
+        /* --- LETTER FORMAT STYLES (For non-ID docs) --- */
+        .paper {
+            background: white; 
+            width: 8.5in; 
+            min-height: 11in; 
+            padding: 1in; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
+            font-family: 'Tinos', 'Times New Roman', serif;
+            color: black;
+            position: relative; /* Needed for watermark */
+            z-index: 1;
+        }
+        
+        /* WATERMARK FOR LETTER */
+        .paper::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('{{ LOGO_RIGHT }}') no-repeat center;
+            background-size: 60%; /* Adjust size of watermark */
+            opacity: 0.1; /* Light faded look */
+            z-index: -1; /* Behind text */
+        }
+
+        .paper .header { text-align: center; margin-bottom: 20px; line-height: 1.3; position: relative; }
+        .paper .header h4 { margin: 0; font-weight: normal; font-size: 14px; }
+        .paper .header h3 { margin: 0; font-weight: bold; font-size: 16px; text-transform: uppercase; }
+        
+        .paper .doc-title { text-align: center; font-size: 24px; font-weight: bold; text-transform: uppercase; text-decoration: underline; margin-bottom: 60px; }
+        .paper .content { font-size: 18px; line-height: 1.8; text-align: justify; }
+        .paper .indent { text-indent: 50px; margin-bottom: 20px; }
+        
+        .paper .footer { margin-top: 80px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .paper .signature-box { text-align: center; width: 250px; }
+        .paper .signature-line { border-top: 1px solid black; margin-top: 50px; margin-bottom: 5px; }
+        .paper .official-name { font-weight: bold; text-transform: uppercase; font-size: 16px; }
+        .paper .official-pos { font-style: italic; font-size: 14px; }
+
+        /* --- ID CARD STYLES --- */
+        .id-sheet {
+            background: white; width: 5in; padding: 0.5in;
+            display: flex; flex-direction: column; gap: 20px; align-items: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .card-box {
+            width: 3.375in; height: 2.125in; border: 1px solid #ddd; border-radius: 8px;
+            position: relative; overflow: hidden; background: white;
+            display: flex; flex-direction: column;
+        }
+
+        /* Front Design */
+        .card-header { background: #1a3c6e; height: 45px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: white; position: relative; }
+        .header-triangle { position: absolute; right: 0; top: 0; width: 0; height: 0; border-style: solid; border-width: 0 45px 45px 0; border-color: transparent white transparent transparent; opacity: 0.1; }
+        .header-logos { display: flex; align-items: center; gap: 5px; }
+        .header-logo-img { width: 32px; height: 32px; object-fit: contain; background: white; border-radius: 50%; }
+        .header-text { text-align: center; flex-grow: 1; line-height: 1; text-transform: uppercase; }
+        .header-text h1 { font-size: 7px; margin: 0; font-weight: normal; letter-spacing: 0.5px; }
+        .header-text h2 { font-size: 8px; margin: 2px 0; font-weight: bold; color: #ffcc00; }
+        .header-text h3 { font-size: 11px; margin: 0; font-weight: 900; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+
+        .card-body { flex-grow: 1; padding: 8px; display: flex; gap: 10px; background: url('{{ LOGO_RIGHT }}') no-repeat center; background-size: 60%; position: relative; }
+        .card-body::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.85); z-index: 0; }
+
+        .col-left { width: 85px; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+        .photo-frame { width: 80px; height: 80px; border: 2px solid #333; background: #ddd; margin-bottom: 5px; }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .signature-area { width: 100%; text-align: center; margin-top: auto; }
+        .sig-line { border-bottom: 1px solid #000; height: 15px; margin-bottom: 2px; }
+        .sig-label { font-size: 6px; font-weight: bold; }
+
+        .col-right { flex-grow: 1; z-index: 1; position: relative; display: flex; flex-direction: column; }
+        .user-name { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 700; color: #000; text-transform: uppercase; line-height: 1.1; margin-bottom: 5px; }
+        .address-box { font-size: 7px; margin-bottom: 5px; line-height: 1.1; text-transform: uppercase; }
+        .info-grid { display: grid; grid-template-columns: auto 1fr; column-gap: 5px; row-gap: 2px; font-size: 7px; }
+        .label { font-weight: bold; color: #555; }
+        .val { font-weight: bold; color: #000; text-transform: uppercase; }
+
+        .dates-row { margin-top: 5px; font-size: 6px; font-weight: bold; color: #1a3c6e; display: flex; flex-direction: column; gap: 1px; }
+
+        .bottom-section { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; }
+        .captain-sig { text-align: center; margin-left: 10px; flex-grow: 1; }
+        .captain-name { font-size: 8px; font-weight: bold; text-decoration: underline; text-transform: uppercase; }
+        .captain-title { font-size: 6px; }
+        .qr-box { width: 45px; height: 45px; }
+        .qr-box img { width: 100%; height: 100%; }
+
+        /* Back Design */
+        .back-header { background: #1a3c6e; height: 35px; color: white; display: flex; align-items: center; padding: 0 15px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1px; }
+        .back-arrows { margin-left: auto; letter-spacing: -2px; opacity: 0.5; }
+        .back-body { padding: 15px; display: flex; justify-content: space-between; position: relative; flex-grow: 1; }
+        .emergency-box { width: 60%; font-size: 7px; z-index: 1; }
+        .emergency-title { color: #1a3c6e; font-weight: bold; font-style: italic; margin-bottom: 5px; font-size: 8px;}
+        .disclaimer { margin-top: 15px; font-size: 7px; font-weight: bold; font-style: italic; text-transform: uppercase; }
+        .back-logo-watermark { position: absolute; right: -20px; bottom: -20px; width: 120px; height: 120px; opacity: 0.2; z-index: 0; }
+        .return-footer { background: #f0f0f0; text-align: center; font-size: 6px; font-weight: bold; padding: 4px; text-transform: uppercase; border-top: 1px solid #ddd; }
+
+        /* --- PRINT MEDIA QUERY --- */
+        @media print {
+            body { background: white; padding: 0; margin: 0; display: block; }
+            .no-print-bar { display: none !important; }
+            .id-sheet, .paper { width: 100%; padding: 0; margin: 0; box-shadow: none; }
+            .card-box {
+                margin: 20px 0; border: 1px solid #000; page-break-inside: avoid;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+            }
+            .card-header, .back-header { background: #1a3c6e !important; color: white !important; }
+            .photo-frame { border-color: #000 !important; background: #ddd !important; }
+            /* Ensure watermark prints */
+            .paper::before, .card-body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-bar">
+        <button onclick="window.print()" class="btn"><i class="ri-printer-line"></i> Print</button>
+        <button onclick="window.close()" class="btn"><i class="ri-close-line"></i> Close</button>
+    </div>
+
+
+{% if is_id %}
+    <div class="id-sheet">
+        <div class="card-box">
+            <div class="card-header">
+                <div class="header-logos"><img src="{{ LOGO_LEFT }}" class="header-logo-img" onerror="this.style.opacity=0"></div>
+                <div class="header-text">
+                    <h1>REPUBLIC OF THE PHILIPPINES</h1>
+                    <h2>CITY OF {{ CITY_NAME }}</h2>
+                    <h3>BARANGAY {{ BRGY_NAME }}</h3>
+                </div>
+                <div class="header-logos"><img src="{{ LOGO_RIGHT }}" class="header-logo-img" onerror="this.style.opacity=0"></div>
+                <div class="header-triangle"></div>
+            </div>
+            <div class="card-body">
+                <div class="col-left">
+                    <div class="photo-frame"><img src="{{ profile_pic }}" onerror="this.src='assets/images/default-id.jpg'"></div>
+                    <div class="signature-area"><div class="sig-line"></div> <div class="sig-label">SIGNATURE</div></div>
+                </div>
+                <div class="col-right">
+                    <div class="user-name">{{ fullname }}</div>
+                    <div class="address-box"><span class="label">ADDRESS:</span> {{ address }}</div>
+                    <div class="info-grid">
+                        <div class="label">BIRTHDATE:</div> <div class="val">{{ birthdate }}</div>
+                        <div class="label">SEX:</div> <div class="val">{{ sex }}</div>
+                        <div class="label">CIVIL STATUS:</div> <div class="val">{{ civil_status }}</div>
+                        <div class="label">STATUS:</div> <div class="val">RESIDENT</div>
+                    </div>
+                    <div class="dates-row">
+                        <div><span style="color:#555;">DATE ISSUED:</span> {{ date_issued }}</div>
+                        <div><span style="color:#555;">VALID UNTIL:</span> {{ valid_until }}</div>
+                    </div>
+                    <div class="bottom-section">
+                        <div class="captain-sig"><div class="captain-name">{{ CAPTAIN }}</div><div class="captain-title">PUNONG BARANGAY</div></div>
+                        <div class="qr-box"><img src="{{ qr_url }}" alt="QR"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-box">
+            <div class="back-header"><span>ID NO. {{ id_no }}</span><span class="back-arrows">>>>>>>>>>>>>>></span></div>
+            <div class="back-body">
+                <div class="emergency-box">
+                    <div class="emergency-title">IN CASE OF EMERGENCY</div>
+                    <div><strong>CONTACT PERSON:</strong></div><div style="border-bottom: 1px solid #ccc; height: 10px; margin-bottom: 5px;"></div>
+                    <div><strong>CONTACT NUMBER:</strong></div><div style="border-bottom: 1px solid #ccc; height: 10px; margin-bottom: 5px;"></div>
+                    <div class="disclaimer">" THIS IS NOT TRANSFERABLE "</div>
+                </div>
+                <img src="{{ LOGO_RIGHT }}" class="back-logo-watermark" onerror="this.style.opacity=0">
+            </div>
+            <div class="return-footer">IF FOUND PLEASE RETURN TO:<br>BARANGAY HALL, {{ BRGY_NAME }}, CITY OF {{ CITY_NAME }}</div>
+        </div>
+    </div>
+{% else %}
+
+    <div class="paper">
+        <div class="header" style="position: relative;">
+            <img src="{{ LOGO_LEFT }}" style="position: absolute; left: 0; top: 0; width: 80px; height: 80px;" onerror="this.style.opacity=0">
+            <img src="{{ LOGO_RIGHT }}" style="position: absolute; right: 0; top: 0; width: 80px; height: 80px;" onerror="this.style.opacity=0">
+            <h4>Republic of the Philippines</h4>
+            <h4>Province of {{ PROVINCE }}</h4>
+            <h4>City of {{ CITY_NAME }}</h4>
+            <br>
+            <h3>OFFICE OF THE PUNONG BARANGAY</h3>
+        </div>
+
+        <hr style="border: 2px solid black; margin-bottom: 40px; margin-top: 5px;">
+
+        <div class="doc-title">
+            {{ doc_type }}
+        </div>
+
+        <div class="content">
+            {{ body_content|safe }}
+            <div class="issued-date">
+                <p class="indent">Issued this {{ date_day }} day of {{ date_month }}, {{ date_year }} at the Barangay {{ BRGY_NAME }}, City of {{ CITY_NAME }}.</p>
+            </div>
+        </div>
+
+        <div class="footer" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 80px;">
+            <div style="text-align: center;">
+                <img src="{{ qr_url }}" style="width: 80px; height: 80px; border: 1px solid #ddd; padding: 2px;">
+                <div style="font-size: 8px; margin-top: 2px;">SCAN FOR VALIDITY</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="official-name">{{ CAPTAIN }}</div>
+                <div class="official-pos">Punong Barangay</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 10px; font-style: italic; border-top: 1px dashed #ccc; padding-top: 10px;">
+            Valid for 6 months from date of issue.<br>
+            Not valid without official seal.
+        </div>
+    </div>
+{% endif %}
+
+</body>
+</html>

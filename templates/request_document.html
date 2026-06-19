@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Request Document | {{ BRGY_NAME }} Resident Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=29">
+    <style>
+        .form-card { background: #fff; border-radius: 16px; box-shadow: 0 10px 35px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.05); overflow: hidden; }
+        .form-header { background: linear-gradient(to right, rgba(10, 62, 159, 1), rgba(42, 90, 179, 1), rgba(69, 114, 196, 1)); padding: 30px; color: white; }
+        .form-control-lg, .form-select-lg { border-radius: 10px; font-size: 0.95rem; padding: 12px 15px; }
+        .btn-submit { background: #0A3E9F; border: none; padding: 14px; border-radius: 10px; font-weight: 600; transition: 0.3s; }
+        .btn-submit:hover { background: #083282; transform: translateY(-2px); }
+        .success-card { text-align: center; padding: 50px 30px; background: #fff; border-radius: 16px; box-shadow: 0 10px 35px rgba(0,0,0,0.1); }
+        .success-icon { width: 80px; height: 80px; border: 4px solid #198754; color: #198754; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 20px; }
+        .req-id-box { background: #f0fdf4; border: 1px dashed #198754; border-radius: 8px; padding: 15px; font-size: 1.2rem; font-weight: 700; color: #155724; margin: 20px 0; letter-spacing: 1px; }
+        .fee-display { background-color: #eef2ff; color: #0A3E9F; border: 1px dashed #0A3E9F; border-radius: 8px; padding: 10px; font-weight: bold; display: none; margin-bottom: 1.5rem; text-align: center; }
+        .payment-summary { background-color: #e7f1ff; border-left: 5px solid #0A3E9F; padding: 15px; border-radius: 4px; margin-bottom: 20px; color: #084298; font-weight: 600; }
+        .qr-container { border: 1px solid #dee2e6; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 10px; }
+    </style>
+</head>
+<body data-bs-spy="scroll" data-bs-target=".navbar">
+
+    <nav class="navbar navbar-expand-lg sticky-top navbar-gradient">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="welcomepage_rsdnt.php">
+                <i class="ri-community-line me-2" style="font-size: 1.5rem;"></i>
+                Resident Portal
+            </a>
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <div class="dropdown">
+                    <a class="notification-circle" href="#" id="navMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ri-menu-line"></i> </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2" aria-labelledby="navMenuDropdown" style="width: 200px;">
+                        <li><a class="dropdown-item rounded py-2" href="welcomepage_rsdnt.php"><i class="ri-home-line me-2 text-primary"></i> Home</a></li>
+                        <li><a class="dropdown-item rounded py-2" href="profile_rsdnt.php"><i class="ri-user-line me-2 text-primary"></i> Profile</a></li>
+                        <li><a class="dropdown-item rounded py-2 fw-bold" href="request_document.php"><i class="ri-file-add-line me-2 text-primary"></i> Request</a></li>
+                        <li><a class="dropdown-item rounded py-2" href="track_request.php"><i class="ri-map-pin-line me-2 text-primary"></i> Track</a></li>
+                        <li class="d-lg-none"><hr class="dropdown-divider"></li>
+                        <li class="d-lg-none"><a class="dropdown-item rounded py-2 text-danger" href="logout.php"><i class="ri-logout-box-line me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <a class="notification-circle position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ri-notification-3-line"></i>
+                        
+                            <span class="badge rounded-pill bg-danger border border-light notif-badge">{{ unread_count }}</span>
+                        
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3" aria-labelledby="notifDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <li class="dropdown-header fw-bold bg-white border-bottom d-flex justify-content-between align-items-center sticky-top">
+                            <span>Notifications</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ unread_count }} unread</small>
+                        </li>
+                        {% if notif_result %}
+                            {% for notif in notif_result %}
+                                {% set is_unread = 'fw-bold bg-light' if not notif.is_read else '' %}
+                                {% set req_id = notif.request_id if notif.request_id else '' %}
+                                <li>
+                                    <a class="dropdown-item py-3 border-bottom {{ is_unread }}" 
+                                       href="notif_read_and_redirect.php?notif_id={{ notif.id }}&req_id={{ req_id }}">
+                                        <div class="d-flex w-100 justify-content-between mb-1">
+                                            <strong class="small text-primary">
+                                                <i class="ri-circle-fill text-primary" style="font-size: 6px; vertical-align: middle;"></i> 
+                                                {{ notif.title|e }}
+                                            </strong>
+                                            <small class="text-muted" style="font-size: 0.7rem;">{{ notif.created_at|fmt_date('%b %d') }}</small>
+                                        </div>
+                                        <p class="mb-0 small text-secondary text-wrap" style="line-height: 1.3; font-size: 0.85rem;">
+                                            {{ notif.message|e }}
+                                        </p>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="p-4 text-center small text-muted">
+                                <i class="ri-notification-off-line d-block fs-4 mb-2 opacity-50"></i>
+                                No notifications yet
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <a href="logout.php" class="btn btn-light fw-bold btn-sm px-3 d-none d-lg-block rounded-pill">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                
+                {% if show_success %}
+                    <div class="success-card">
+                        <div class="success-icon"><i class="ri-check-line"></i></div>
+                        <h2 class="fw-bold text-dark mb-2">Request Submitted!</h2>
+                        <div class="req-id-box">Request ID: {{ new_req_id }}</div>
+                        <p class="text-muted small mb-4">You can track your request status in your dashboard.</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="request_document.php" class="btn btn-outline-primary fw-bold w-50">New Request</a>
+                            <a href="track_request.php" class="btn btn-primary fw-bold w-50">Track Status</a>
+                        </div>
+                    </div>
+                {% else %}
+
+                <a href="welcomepage_rsdnt.php" class="text-decoration-none text-muted mb-3 d-inline-block fw-bold small">
+                    <i class="ri-arrow-left-line me-1"></i> Back to Dashboard
+                </a>
+
+                {% if error_msg %}
+                    <div class="alert alert-danger">{{ error_msg }}</div>
+                {% endif %}
+
+                <div class="form-card">
+                    <div class="form-header text-center">
+                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; color: #0A3E9F;">
+                            <i class="ri-file-add-line fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold text-white mb-1">New Request</h4>
+                        <p class="mb-0 opacity-75 small">Submit a request for official barangay documents.</p>
+                    </div>
+
+                    <div class="p-4 p-md-5">
+                        <form id="reqForm" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="payment_reference" id="hiddenRef">
+
+                            <div class="mb-4 p-3 bg-light rounded-3 border">
+                                <label class="small text-muted fw-bold text-uppercase mb-2">Requesting As:</label>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ display_pic }}" alt="Profile" class="rounded-circle me-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #fff; outline: 2px solid #0A3E9F;">
+                                    <div>
+                                        <div class="fw-bold text-dark fs-5">{{ user_info.fullname|e }}</div>
+                                        <div class="small text-muted"><i class="ri-phone-line me-1"></i> {{ user_info.contact|e }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark">Document Type <span class="text-danger">*</span></label>
+                                <select name="document_type" id="docTypeSelect" class="form-select form-select-lg" required onchange="updateFee()">
+                                    <option value="" selected disabled>Select document...</option>
+                                    {% for row in docs_query %}
+                                        <option value="{{ row.doc_name }}" 
+                                                data-price="{{ row.price }}"
+                                                data-reqs="{{ row.requirements|e }}">
+                                            {{ row.doc_name }} 
+                                            {% if (row.price or 0)|float == 0 %}(Free){% else %}({{ row.price|peso }}){% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                                
+                            <div id="reqsSection" style="display:none;" class="mb-3">
+                                <div class="alert alert-info py-2 small border-0 bg-info-subtle text-info-emphasis">
+                                    <i class="ri-information-line me-1"></i> <strong>Requirements:</strong> <span id="reqsText"></span>
+                                </div>
+                                <label class="form-label fw-bold">Upload Requirements <span class="text-danger">*</span></label>
+                                <input type="file" name="req_files[]" id="reqFile" class="form-control" accept=".jpg, .jpeg, .png" multiple>
+                                <div class="form-text small"><i class="ri-image-line"></i> Upload <strong>JPG or PNG</strong> images.</div>
+                            </div>
+
+                            <div id="feeBox" class="fee-display">
+                                Document Fee: <span id="feeAmount">₱0.00</span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark">Purpose of Request <span class="text-danger">*</span></label>
+                                <textarea name="purpose" class="form-control form-control-lg" rows="3" placeholder="E.g., For employment, Scholarship, etc." required></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold text-dark">Pickup Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="pickup_date" id="pickupDate" class="form-control form-control-lg" required>
+                                    
+                                    <div class="form-text small mt-1" id="dateHelper">
+                                        <i class="ri-loader-4-line me-1"></i> Checking date availability...
+                                    </div>
+
+                                    <div class="form-text text-secondary small mt-0">
+                                        <i class="ri-store-2-line me-1"></i> Pickup Hours: <strong>9:00 AM - 5:00 PM</strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-4" id="paymentSection" style="display:none;">
+                                    <label class="form-label fw-bold text-dark">Payment Method <span class="text-danger">*</span></label>
+                                    <select name="payment_method" id="payMethod" class="form-select form-select-lg">
+                                        <option value="" selected disabled>Select method...</option>
+                                        <option value="Cash">Cash on Pickup</option>
+                                        <option value="GCash">GCash</option>
+                                        <option value="Maya">Maya</option>
+                                        <option value="Bank Transfer">Bank Transfer ({{ BANK_NAME }})</option>
+                                        <option value="Free" hidden>Free</option>
+                                    </select>
+                                    <div class="form-text small text-muted">
+                                        Select an e-wallet or bank to see account details.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="validateAndSubmit()" class="btn btn-primary w-100 btn-submit btn-lg text-white shadow-sm">
+                                <i class="ri-send-plane-fill me-2"></i> Submit Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-body p-4 text-center">
+                    <h5 class="fw-bold mb-3" id="modalTitle">Scan to Pay</h5>
+                    <div class="alert alert-primary py-2 fw-bold">Total: <span id="modalFee">₱0.00</span></div>
+                    
+                    <div id="modalQRContainer" class="d-none">
+                        <img id="modalQR" src="" class="img-fluid border p-2 rounded mb-2" style="max-height: 200px;">
+                    </div>
+                    
+                    <div class="fw-bold fs-5" id="modalAccountName"></div>
+                    <div class="fw-bold text-primary" id="modalAccountNum"></div>
+                    <div class="text-muted small mb-3">Barangay Treasurer</div>
+                    
+                    <input type="text" id="modalRefInput" class="form-control mb-1" placeholder="Enter Transaction Reference No." maxlength="30" autocomplete="off">
+                    <div class="form-text text-muted small text-start mb-1">Enter the actual GCash, Maya, or Bank Transfer reference number. Letters and numbers only, 8–30 characters.</div>
+                    <div class="text-danger small d-none text-start" id="refError">Reference number required.</div>
+                    
+                    <button onclick="submitWithRef()" class="btn btn-success w-100 mt-3 fw-bold">Verify & Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const PAYMENT_INFO = {
+        'GCash': {
+            name: 'GCash',
+            num: {{ GCASH_NUM|default('', true)|tojson }},
+            qr: {{ GCASH_QR|default('', true)|tojson }},
+            accountName: 'GCash Account'
+        },
+        'Maya': {
+            name: 'Maya',
+            num: {{ MAYA_NUM|default('', true)|tojson }},
+            qr: {{ MAYA_QR|default('', true)|tojson }},
+            accountName: 'Maya Account'
+        },
+        'Bank Transfer': {
+            name: {{ BANK_NAME|default('Bank Transfer', true)|tojson }},
+            num: {{ BANK_ACC|default('', true)|tojson }},
+            qr: {{ BANK_QR|default('', true)|tojson }},
+            accountName: {{ BANK_USER|default('Bank Account', true)|tojson }}
+        }
+    };
+
+    const dateInput = document.getElementById('pickupDate');
+    const dateHelper = document.getElementById('dateHelper');
+
+    if (dateInput) {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const cutoffHour = 15;
+
+        let minDate = new Date();
+        let message = '';
+        let msgClass = '';
+
+        if (currentHour >= cutoffHour) {
+            minDate.setDate(minDate.getDate() + 1);
+            message = "<i class='ri-information-line me-1'></i> Today's cutoff (3 PM) has passed. Earliest pickup is <strong>Tomorrow</strong>.";
+            msgClass = 'text-danger';
+        } else {
+            message = "<i class='ri-calendar-check-line me-1'></i> You may select <strong>Today</strong> for rush requests (until 3 PM).";
+            msgClass = 'text-primary';
+        }
+
+        const yyyy = minDate.getFullYear();
+        const mm = String(minDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(minDate.getDate()).padStart(2, '0');
+
+        dateInput.setAttribute('min', `${yyyy}-${mm}-${dd}`);
+
+        if (dateHelper) {
+            dateHelper.innerHTML = message;
+            dateHelper.className = `form-text small mt-1 ${msgClass}`;
+        }
+    }
+
+    let currentPrice = 0;
+
+    function updateFee() {
+        const select = document.getElementById('docTypeSelect');
+        const feeBox = document.getElementById('feeBox');
+        const feeAmount = document.getElementById('feeAmount');
+        const modalFee = document.getElementById('modalFee');
+        const paySection = document.getElementById('paymentSection');
+        const payMethod = document.getElementById('payMethod');
+        const reqsSection = document.getElementById('reqsSection');
+        const reqsText = document.getElementById('reqsText');
+        const reqFile = document.getElementById('reqFile');
+
+        if (!select || !select.value) {
+            currentPrice = 0;
+            return;
+        }
+
+        const selected = select.options[select.selectedIndex];
+
+        const rawPrice = selected.getAttribute('data-price') || '0';
+        const cleanedPrice = String(rawPrice).replace(/[^\d.]/g, '');
+        const price = parseFloat(cleanedPrice) || 0;
+
+        const reqs = selected.getAttribute('data-reqs') || '';
+
+        currentPrice = price;
+
+        if (reqs && reqs !== 'None' && reqs.trim() !== '') {
+            reqsSection.style.display = 'block';
+            reqsText.innerText = reqs;
+            reqFile.required = true;
+        } else {
+            reqsSection.style.display = 'none';
+            reqsText.innerText = '';
+            reqFile.required = false;
+        }
+
+        if (price > 0) {
+            feeBox.style.display = 'block';
+            feeAmount.innerText = '₱' + price.toFixed(2);
+            modalFee.innerText = '₱' + price.toFixed(2);
+
+            paySection.style.display = 'block';
+            payMethod.required = true;
+
+            if (payMethod.value === 'Free') {
+                payMethod.value = '';
+            }
+        } else {
+            feeBox.style.display = 'none';
+            paySection.style.display = 'none';
+            payMethod.required = false;
+            payMethod.value = 'Free';
+        }
+    }
+
+    function validateAndSubmit() {
+        const form = document.getElementById('reqForm');
+        const payMethod = document.getElementById('payMethod');
+
+        updateFee();
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const selectedPayment = payMethod ? payMethod.value : '';
+
+        if (currentPrice > 0 && ['GCash', 'Maya', 'Bank Transfer'].includes(selectedPayment)) {
+            const info = PAYMENT_INFO[selectedPayment];
+
+            document.getElementById('modalTitle').innerText = 'Pay via ' + selectedPayment;
+            document.getElementById('modalAccountName').innerText = info.accountName || selectedPayment;
+            document.getElementById('modalAccountNum').innerText = info.num || 'Account number not set';
+
+            const qrContainer = document.getElementById('modalQRContainer');
+            const qrImg = document.getElementById('modalQR');
+
+            if (info.qr && info.qr.trim() !== '') {
+                qrImg.src = info.qr;
+                qrContainer.classList.remove('d-none');
+            } else {
+                qrContainer.classList.add('d-none');
+            }
+
+            const refInput = document.getElementById('modalRefInput');
+            const refError = document.getElementById('refError');
+
+            refInput.value = '';
+            refInput.classList.remove('is-invalid');
+            refError.classList.add('d-none');
+            refError.innerText = 'Reference number required.';
+
+            new bootstrap.Modal(document.getElementById('paymentModal')).show();
+            return;
+        }
+
+        form.submit();
+    }
+
+    function validateReferenceNumber(value) {
+        const cleaned = value.trim().replace(/\s+/g, '').replace(/-/g, '');
+
+        if (cleaned === '') {
+            return {
+                valid: false,
+                message: 'Reference number required.'
+            };
+        }
+
+        if (!/^[A-Za-z0-9]{8,30}$/.test(cleaned)) {
+            return {
+                valid: false,
+                message: 'Invalid reference number. Use 8 to 30 letters/numbers only.'
+            };
+        }
+
+        const uniqueChars = new Set(cleaned.toLowerCase().split(''));
+
+        if (uniqueChars.size <= 2) {
+            return {
+                valid: false,
+                message: 'Invalid reference number. Please enter the actual transaction reference.'
+            };
+        }
+
+        return {
+            valid: true,
+            value: cleaned
+        };
+    }
+
+    function submitWithRef() {
+        const form = document.getElementById('reqForm');
+        const refInput = document.getElementById('modalRefInput');
+        const refError = document.getElementById('refError');
+
+        const result = validateReferenceNumber(refInput.value);
+
+        if (!result.valid) {
+            refInput.classList.add('is-invalid');
+            refError.innerText = result.message;
+            refError.classList.remove('d-none');
+            return;
+        }
+
+        refInput.classList.remove('is-invalid');
+        refError.classList.add('d-none');
+
+        document.getElementById('hiddenRef').value = result.value;
+        form.submit();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const docTypeSelect = document.getElementById('docTypeSelect');
+
+        if (docTypeSelect) {
+            docTypeSelect.addEventListener('change', updateFee);
+            updateFee();
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions | Official Portal</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css?v=25">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* Table Styling */
+    .table-responsive { border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .table-custom thead th { background-color: #0A3E9F; color: white; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; padding: 15px; border: none; white-space: nowrap; }
+    .table-custom tbody td { padding: 15px; vertical-align: middle; color: #333; border-bottom: 1px solid #f0f0f0; background: white; }
+    
+    /* New Status Badges */
+    .badge-status { padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }     /* Yellow */
+    .badge-approved { background: #cfe2ff; color: #084298; border: 1px solid #b6d4fe; }    /* Blue */
+    .badge-processing { background: #e2e3e5; color: #41464b; border: 1px solid #d3d6d8; }  /* Grey/Orange feel */
+    .badge-ready { background: #e0cffc; color: #3d0a91; border: 1px solid #c5b3e6; }       /* Purple */
+    .badge-completed { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }   /* Green */
+    .badge-rejected { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }    /* Red */
+
+    /* Payment Badges */
+    .badge-paid { background: #198754; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+    .badge-unpaid { background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+    
+    /* Action Buttons */
+    .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #dee2e6; color: #555; background: white; transition: all 0.2s; margin-right: 2px; }
+    .btn-icon:hover { background: #f8f9fa; transform: translateY(-2px); }
+    
+    /* Smart Action Button */
+    .btn-next-step { font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; width: 100%; justify-content: center; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-next-step:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+</style>
+</head>
+<body data-bs-spy="scroll" data-bs-target=".navbar">
+
+    <nav class="navbar navbar-expand-lg sticky-top navbar-gradient">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="#">
+                <i class="ri-government-line me-2" style="font-size: 1.5rem;"></i> Barangay Official
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex align-items-center ms-auto gap-5">
+                    <ul class="navbar-nav d-flex flex-row gap-3">
+                        <li class="nav-item"><a class="nav-link text-white opacity-75" href="dashboard_offcl.php">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white opacity-75" href="profile_offcl.php">Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white active" href="transactions_offcl.php">Requests</a></li>
+                    </ul>
+                    <a href="logout.php" class="btn btn-light fw-bold">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-dark">Document Requests</h3>
+            <div class="input-group" style="width: 300px;">
+                <span class="input-group-text bg-white"><i class="ri-search-line"></i></span>
+                <input type="text" id="searchReq" class="form-control border-start-0" placeholder="Search ID or Name...">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Resident</th>
+                        <th>Document</th>
+                        <th>Pickup Date</th>
+                        <th class="text-center">Payment</th>
+                        <th class="text-center">Status</th>
+                        <th style="width: 160px;">Next Step</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reqTableBody"></tbody>
+            </table>
+        </div>
+        <div id="loader" class="text-center p-5 d-none"><div class="spinner-border text-primary"></div></div>
+    </div>
+
+    <div class="modal fade" id="viewModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Request Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 pt-0">
+                    <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; font-weight:bold;">
+                            <i class="ri-user-line"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted fw-bold">REQUESTED BY</div>
+                            <div class="fw-bold text-dark fs-5" id="m-name"></div>
+                            <div class="small text-muted" id="m-contact"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="small text-muted fw-bold">DOCUMENT</label>
+                            <div class="fw-bold text-primary" id="m-doc"></div>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-muted fw-bold">PICKUP DATE</label>
+                            <div class="fw-bold text-dark" id="m-pickup"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small text-muted fw-bold">PAYMENT DETAILS</label>
+                        <div class="p-3 border rounded bg-white mt-1">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Method:</span>
+                                <span class="fw-bold" id="m-method"></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Reference No:</span>
+                                <span class="fw-bold text-primary" id="m-ref"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="small text-muted fw-bold">PURPOSE</label>
+                        <div class="p-3 border rounded bg-white text-secondary mt-1" id="m-purpose"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="small text-muted fw-bold">REQUIREMENTS SUBMITTED</label>
+                        <div class="p-3 border rounded bg-white mt-1">
+                            <div id="m-req-container" class="d-flex flex-wrap gap-2 justify-content-center"></div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="m-id">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="noteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Official Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="noteText" class="form-control" rows="5" placeholder="Enter remarks..."></textarea>
+                    <input type="hidden" id="noteId">
+                </div>
+                <div class="modal-footer"><button onclick="saveNote()" class="btn btn-primary w-100">Save Note</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="filePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Submitted Requirement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-center">
+                <img id="previewImage"
+                     class="img-fluid rounded border shadow-sm"
+                     style="max-height: 500px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+<script src="./assets/js/main.js"></script>
+
+<script>
+const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchRequests();
+    document.getElementById('searchReq').addEventListener('keyup', (e) => fetchRequests(e.target.value));
+});
+
+function fetchRequests(query = '') {
+    const tbody = document.getElementById('reqTableBody');
+    tbody.innerHTML = '';
+    document.getElementById('loader').classList.remove('d-none');
+
+    fetch(`fetch_requests.php?search=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loader').classList.add('d-none');
+            
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">No records found.</td></tr>';
+                return;
+            }
+
+            data.forEach(row => {
+                let reqCode = `BRGY-${new Date().getFullYear()}-${String(row.id).padStart(5, '0')}`;
+                
+                // 1. DYNAMIC STATUS BADGE
+                let badgeClass = 'badge-pending';
+                if(row.status === 'Approved') badgeClass = 'badge-approved';
+                if(row.status === 'Processing') badgeClass = 'badge-processing';
+                if(row.status === 'Ready for Pickup') badgeClass = 'badge-ready';
+                if(row.status === 'Completed') badgeClass = 'badge-completed';
+                if(row.status === 'Rejected') badgeClass = 'badge-rejected';
+                
+                let statusBadge = `<span class="badge-status ${badgeClass}">${row.status}</span>`;
+
+                // 2. PAYMENT BADGE
+                let payClass = row.payment_status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+                let payBadge = `<span class="${payClass}">${row.payment_status.toUpperCase()}</span>`;
+
+                // 3. SMART NEXT STEP BUTTON
+                let nextStepBtn = '';
+                if(row.status === 'Pending') {
+                    nextStepBtn = `<button onclick="updateStatus(${row.id}, 'Approved')" class="btn btn-primary btn-next-step text-white"><i class="ri-check-line me-1"></i> Approve</button>`;
+                } else if(row.status === 'Approved') {
+                    nextStepBtn = `<button onclick="updateStatus(${row.id}, 'Processing')" class="btn btn-info btn-next-step text-white"><i class="ri-loader-4-line me-1"></i> Process</button>`;
+                } else if(row.status === 'Processing') {
+                    nextStepBtn = `<button onclick="updateStatus(${row.id}, 'Ready for Pickup')" class="btn btn-warning btn-next-step text-dark"><i class="ri-notification-3-line me-1"></i> Ready</button>`;
+                } else if(row.status === 'Ready for Pickup') {
+                    nextStepBtn = `<button onclick="updateStatus(${row.id}, 'Completed')" class="btn btn-success btn-next-step text-white"><i class="ri-checkbox-circle-line me-1"></i> Complete</button>`;
+                } else if(row.status === 'Completed') {
+                    nextStepBtn = `<span class="text-muted small fw-bold"><i class="ri-checkbox-circle-fill text-success"></i> Done</span>`;
+                } else {
+                    nextStepBtn = `<span class="text-danger small fw-bold">Rejected</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-primary">${reqCode}</td>
+                        <td class="fw-bold">${row.fullname}</td>
+                        <td>${row.document_type}</td>
+                        <td>${row.formatted_pickup_date}</td>
+                        <td class="text-center clickable" onclick="togglePayment(${row.id}, '${row.payment_status}')" style="cursor:pointer">${payBadge}</td>
+                        <td class="text-center">${statusBadge}</td>
+                        <td>${nextStepBtn}</td>
+                        <td class="text-end">
+                            <button class="btn-icon btn-primary text-primary" title="View Details" onclick='openView(${JSON.stringify(row)})'>
+                                <i class="ri-eye-line"></i>
+                            </button>
+
+                            <button class="btn-icon btn-print" title="Print" onclick="printDoc(${row.id})">
+                                <i class="ri-printer-line"></i>
+                            </button>
+                            
+                            <button class="btn-icon btn-note" title="Notes" onclick="openNote(${row.id}, '${row.official_notes || ''}')">
+                                <i class="ri-message-2-line"></i>
+                            </button>
+                            
+                            ${row.status === 'Pending' ? `<button class="btn-icon text-danger" title="Reject" onclick="updateStatus(${row.id}, 'Rejected')"><i class="ri-close-line"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+}
+
+function updateStatus(id, newStatus) {
+    let confirmText = `Move status to "${newStatus}"?`;
+    let confirmBtn = 'Yes, Update';
+    let confirmColor = '#0A3E9F';
+
+    if(newStatus === 'Rejected') {
+        confirmText = "Are you sure you want to REJECT this request?";
+        confirmBtn = "Yes, Reject";
+        confirmColor = "#dc3545";
+    }
+
+    Swal.fire({
+        title: 'Update Status?',
+        text: confirmText,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: confirmBtn,
+        confirmButtonColor: confirmColor
+    }).then((res) => {
+        if(res.isConfirmed) sendAction(id, 'update_status', newStatus);
+    });
+}
+
+function togglePayment(id, currentStatus) {
+    let newStatus = currentStatus === 'Paid' ? 'Unpaid' : 'Paid';
+    sendAction(id, 'toggle_payment', newStatus);
+}
+
+function openView(data) {
+    document.getElementById('m-id').value = data.id;
+    document.getElementById('m-name').textContent = data.fullname;
+    document.getElementById('m-contact').textContent = data.contact || 'No contact';
+    document.getElementById('m-doc').textContent = data.document_type;
+    document.getElementById('m-pickup').textContent = data.formatted_pickup_date;
+    document.getElementById('m-purpose').textContent = data.purpose;
+    
+    // Handle Payment Details Display
+    document.getElementById('m-method').textContent = data.payment_method;
+    document.getElementById('m-ref').textContent = data.payment_reference || 'N/A';
+
+    const reqContainer = document.getElementById('m-req-container');
+    reqContainer.innerHTML = '';
+
+    if (data.requirement_file && data.requirement_file.trim() !== "") {
+        const files = data.requirement_file.split(',');
+
+        files.forEach(filePath => {
+            const cleanPath = filePath.trim();
+
+            reqContainer.innerHTML += `
+                <img src="${cleanPath}"
+                    onclick="previewRequirement('${cleanPath}')"
+                    class="rounded border shadow-sm"
+                    style="width:100px;height:100px;object-fit:cover;cursor:pointer;"
+                    title="Click to preview"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    onerror="this.style.display='none'">
+            `;
+        });
+    } else {
+        reqContainer.innerHTML = '<div class="text-muted small">No requirements submitted</div>';
+    }
+
+
+    // Show the modal
+    const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+    viewModal.show();
+}
+
+function previewRequirement(imgPath) {
+    document.getElementById('previewImage').src = imgPath;
+    new bootstrap.Modal(document.getElementById('filePreviewModal')).show();
+}
+
+
+function openNote(id, currentNote) {
+    document.getElementById('noteId').value = id;
+    document.getElementById('noteText').value = currentNote;
+    noteModal.show();
+}
+
+function saveNote() {
+    let id = document.getElementById('noteId').value;
+    let note = document.getElementById('noteText').value;
+    sendAction(id, 'save_note', note);
+    noteModal.hide();
+}
+
+function printDoc(id) {
+    window.open(`print_document.php?id=${id}`, '_blank');
+}
+
+function sendAction(id, action, payload = '') {
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('action', action);
+    formData.append('payload', payload);
+
+    fetch('request_actions.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === 'success') {
+            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+            Toast.fire({ icon: 'success', title: data.message });
+            fetchRequests();
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    });
+}
+</script>
+<script>
+    // Check account status every 5 seconds
+    setInterval(function() {
+        fetch('check_status.php')
+            .then(response => response.json())
+            .then(data => {
+                
+                // 1. Handle REJECTED Users
+                if (data.status === 'Rejected') {
+                    if (data.role === 'Resident') {
+                        // Residents go to Pending Page
+                        window.location.href = 'pending_status.php'; 
+                    } else {
+                        // Officials go to Access Denied Page
+                        window.location.href = 'access_denied.php'; 
+                    }
+                } 
+                
+                // 2. Handle LOGGED OUT Users
+                else if (data.status === 'logged_out') {
+                    window.location.href = 'login.php';
+                }
+                
+            })
+            .catch(error => console.error('Error checking status:', error));
+    }, 5000); 
+</script>
+</body>
+</html>

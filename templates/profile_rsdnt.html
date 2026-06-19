@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Profile | {{ BRGY_NAME }} Resident Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=29">
+    <style>
+        .profile-header-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
+        .profile-cover { height: 150px; background: linear-gradient(to right, rgba(10, 62, 159, 1), rgba(42, 90, 179, 1), rgba(69, 114, 196, 1)) !important;; }
+        .profile-avatar-container { margin-top: -75px; text-align: center; position: relative; }
+        .profile-avatar { width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.15); background: #fff; }
+        .camera-btn { position: absolute; bottom: 0; right: calc(50% - 65px); background: #fff; border: 1px solid #ddd; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); color: #555; transition: 0.2s; }
+        .camera-btn:hover { background: #f8f9fa; color: #0A3E9F; }
+        .nav-pills .nav-link { color: #555; font-weight: 600; padding: 12px 20px; border-radius: 10px; }
+        .nav-pills .nav-link.active { background-color: #0A3E9F; color: white; }
+        .form-label { font-weight: 600; font-size: 0.9rem; color: #555; }
+        .form-control:focus { border-color: #0A3E9F; box-shadow: 0 0 0 0.25rem rgba(10, 62, 159, 0.15); }
+    </style>
+</head>
+<body data-bs-spy="scroll" data-bs-target=".navbar">
+
+    <nav class="navbar navbar-expand-lg sticky-top navbar-gradient">
+    <div class="container">
+        
+        <a class="navbar-brand d-flex align-items-center fw-semibold text-white" href="welcomepage_rsdnt.php">
+            <i class="ri-community-line me-2" style="font-size: 1.5rem;"></i>
+            Resident Portal
+        </a>
+
+        <div class="d-flex align-items-center gap-3 ms-auto">
+            
+            <div class="dropdown">
+                <a class="notification-circle" href="#" id="navMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="ri-menu-line"></i> </a>
+                
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2" aria-labelledby="navMenuDropdown" style="width: 200px;">
+                    <li><a class="dropdown-item rounded py-2" href="welcomepage_rsdnt.php"><i class="ri-home-line me-2 text-primary"></i> Home</a></li>
+                    <li><a class="dropdown-item rounded py-2 fw-bold" href="profile_rsdnt.php"><i class="ri-user-line me-2 text-primary"></i> Profile</a></li>
+                    <li><a class="dropdown-item rounded py-2" href="request_document.php"><i class="ri-file-add-line me-2 text-primary"></i> Request</a></li>
+                    <li><a class="dropdown-item rounded py-2" href="track_request.php"><i class="ri-map-pin-line me-2 text-primary"></i> Track</a></li>
+                    <li class="d-lg-none"><hr class="dropdown-divider"></li>
+                    <li class="d-lg-none"><a class="dropdown-item rounded py-2 text-danger" href="logout.php"><i class="ri-logout-box-line me-2"></i> Logout</a></li>
+                </ul>
+            </div>
+
+            <div class="dropdown">
+                    <a class="notification-circle position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ri-notification-3-line"></i>
+                        
+                            <span class="badge rounded-pill bg-danger border border-light notif-badge">
+                                {{ unread_count }}
+                            </span>
+                        
+                    </a>
+                    
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3" aria-labelledby="notifDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <li class="dropdown-header fw-bold bg-white border-bottom d-flex justify-content-between align-items-center sticky-top">
+                            <span>Notifications</span>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ unread_count }} unread</small>
+                        </li>
+                        {% if notif_result %}
+                            {% for notif in notif_result %}
+                                {% set is_unread = 'fw-bold bg-light' if not notif.is_read else '' %}
+                                {% set req_id = notif.request_id if notif.request_id else '' %}
+                                <li>
+                                    <a class="dropdown-item py-3 border-bottom {{ is_unread }}" 
+                                       href="notif_read_and_redirect.php?notif_id={{ notif.id }}&req_id={{ req_id }}">
+                                        <div class="d-flex w-100 justify-content-between mb-1">
+                                            <strong class="small text-primary">
+                                                <i class="ri-circle-fill text-primary" style="font-size: 6px; vertical-align: middle;"></i> 
+                                                {{ notif.title|e }}
+                                            </strong>
+                                            <small class="text-muted" style="font-size: 0.7rem;">{{ notif.created_at|fmt_date('%b %d') }}</small>
+                                        </div>
+                                        <p class="mb-0 small text-secondary text-wrap" style="line-height: 1.3; font-size: 0.85rem;">
+                                            {{ notif.message|e }}
+                                        </p>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="p-4 text-center small text-muted">
+                                <i class="ri-notification-off-line d-block fs-4 mb-2 opacity-50"></i>
+                                No notifications yet
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+            <a href="logout.php" class="btn btn-light fw-bold btn-sm px-3 d-none d-lg-block rounded-pill">Logout</a>
+
+        </div>
+    </div>
+</nav>
+
+    <div class="container py-5">
+        
+        <div id="alertContainer">
+            {% if msg %}
+                <div class="alert alert-{{ msg_type }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-4">
+                <div class="profile-header-card text-center pb-4">
+                    <div class="profile-cover"></div>
+                    <div class="profile-avatar-container">
+                        <img src="{{ profile_pic }}" class="profile-avatar" id="avatarPreview">
+                        <form action="" method="POST" enctype="multipart/form-data" id="photoForm">
+                            <label for="uploadPhoto" class="camera-btn" title="Change Profile Picture"><i class="ri-camera-fill"></i></label>
+                            <input type="file" name="profile_picture" id="uploadPhoto" class="d-none" onchange="document.getElementById('photoForm').submit()">
+                        </form>
+                    </div>
+                    <h4 class="fw-bold mt-3 mb-1">{{ user.fullname }}</h4>
+                    <p class="text-muted small mb-3">{{ user.email }}</p>
+                    <span class="badge bg-primary px-3 py-2 rounded-pill">Resident</span>
+                    <span class="badge bg-success px-3 py-2 rounded-pill">{{ user.account_status }}</span>
+                    <hr class="mx-4 my-4 opacity-25">
+                    <div class="d-flex justify-content-around px-4">
+                        <div class="text-center"><h6 class="fw-bold mb-0">Member Since</h6><small class="text-muted">{{ user.created_at|fmt_date('%b %d, %Y') }}</small></div>
+                        <div class="text-center"><h6 class="fw-bold mb-0">ID Number</h6><small class="text-muted">RES-{{ '%05d'|format(user.id) }}</small></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body p-4">
+                        <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                            <li class="nav-item"><button class="nav-link active" id="pills-info-tab" data-bs-toggle="pill" data-bs-target="#pills-info">Personal Info</button></li>
+                            <li class="nav-item"><button class="nav-link" id="pills-security-tab" data-bs-toggle="pill" data-bs-target="#pills-security">Security</button></li>
+                        </ul>
+
+                        <div class="tab-content" id="pills-tabContent">
+                            <div class="tab-pane fade show active" id="pills-info">
+                                <form action="" method="POST" id="infoForm">
+                                    <input type="hidden" id="originalEmail" value="{{ user.email }}">
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label">Full Name <span class="text-muted small">(Protected)</span></label>
+                                            <input type="text" class="form-control bg-light" value="{{ user.fullname }}" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Birthdate <span class="text-muted small">(Protected)</span></label>
+                                            <input type="text" class="form-control bg-light" value="{{ user.birthdate|fmt_date('%b %d, %Y') }}" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Gender <span class="text-muted small">(Protected)</span></label>
+                                            <input type="text" class="form-control bg-light" value="{{ user.sex }}" readonly>
+                                        </div>
+                                        <div class="col-12"><hr class="text-muted opacity-25"></div>
+                                        
+                                        <div class="col-md-6">
+                                            <label class="form-label">Civil Status <span class="text-danger">*</span></label>
+                                            <select name="civil_status" id="civilStatus" class="form-select" required>
+                                                {% set civil = user.civil_status or 'Single' %}
+
+                                                {% if civil == 'Single' %}
+                                                    <option value="Single" selected>Single</option>
+                                                {% else %}
+                                                    <option value="Single">Single</option>
+                                                {% endif %}
+
+                                                {% if civil == 'Married' %}
+                                                    <option value="Married" selected>Married</option>
+                                                {% else %}
+                                                    <option value="Married">Married</option>
+                                                {% endif %}
+
+                                                {% if civil == 'Widowed' %}
+                                                    <option value="Widowed" selected>Widowed</option>
+                                                {% else %}
+                                                    <option value="Widowed">Widowed</option>
+                                                {% endif %}
+
+                                                {% if civil == 'Separated' %}
+                                                    <option value="Separated" selected>Separated</option>
+                                                {% else %}
+                                                    <option value="Separated">Separated</option>
+                                                {% endif %}
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                                            <input type="email" name="email" id="emailInput" class="form-control {{ '' }}" value="{{ user.email }}" required>
+                                            <div id="emailFeedback" class="invalid-feedback">
+                                                {{ '' }}
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                            <input type="text" name="contact" id="contactInput" class="form-control {{ '' }}" value="{{ user.contact }}" required maxlength="11" placeholder="09123456789">
+                                            <div id="contactFeedback" class="invalid-feedback">
+                                                {{ '' }}
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 text-end mt-4">
+                                            <button type="submit" name="update_info" class="btn btn-primary fw-bold px-4" id="saveInfoBtn">Save Changes</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="pills-security">
+                                <form action="" method="POST" id="passwordForm" novalidate>
+                                    <div class="alert alert-warning border-0 small">
+                                        <i class="ri-lock-password-line"></i>
+                                        Enter your current password before setting a new one.
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Password <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input
+                                                type="password"
+                                                name="current_password"
+                                                id="currentPassword"
+                                                class="form-control"
+                                                placeholder="Enter current password"
+                                                required
+                                            >
+                                            <button
+                                                class="btn btn-outline-secondary toggle-password"
+                                                type="button"
+                                                data-target="currentPassword"
+                                                aria-label="Show current password"
+                                            >
+                                                <i class="ri-eye-line"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback d-block" id="currentPasswordFeedback"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">New Password <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input
+                                                type="password"
+                                                name="new_password"
+                                                id="newPassword"
+                                                class="form-control"
+                                                placeholder="Enter new password"
+                                                required
+                                            >
+                                            <button
+                                                class="btn btn-outline-secondary toggle-password"
+                                                type="button"
+                                                data-target="newPassword"
+                                                aria-label="Show new password"
+                                            >
+                                                <i class="ri-eye-line"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="small mt-2" id="passwordRules">
+                                            <div id="ruleLength" class="text-muted"><i class="ri-close-circle-line me-1"></i> At least 8 characters</div>
+                                            <div id="ruleUpper" class="text-muted"><i class="ri-close-circle-line me-1"></i> At least 1 uppercase letter</div>
+                                            <div id="ruleLower" class="text-muted"><i class="ri-close-circle-line me-1"></i> At least 1 lowercase letter</div>
+                                            <div id="ruleNumber" class="text-muted"><i class="ri-close-circle-line me-1"></i> At least 1 number</div>
+                                            <div id="ruleSpecial" class="text-muted"><i class="ri-close-circle-line me-1"></i> At least 1 special character</div>
+                                        </div>
+
+                                        <div class="invalid-feedback d-block" id="newPasswordFeedback"></div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">Confirm New Password <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input
+                                                type="password"
+                                                name="confirm_password"
+                                                id="confirmPassword"
+                                                class="form-control"
+                                                placeholder="Confirm new password"
+                                                required
+                                            >
+                                            <button
+                                                class="btn btn-outline-secondary toggle-password"
+                                                type="button"
+                                                data-target="confirmPassword"
+                                                aria-label="Show confirm password"
+                                            >
+                                                <i class="ri-eye-line"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback d-block" id="confirmPasswordFeedback"></div>
+                                    </div>
+
+                                    <div class="text-end">
+                                        <button type="submit" name="change_pass" class="btn btn-danger fw-bold px-4" id="savePassBtn">
+                                            <i class="ri-shield-keyhole-line me-1"></i> Update Password
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="otpModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4">
+                <h3 class="fw-bold text-center">Verify Email Change</h3>
+                <p class="text-center text-muted" id="otpMessage">Enter code sent to your new email.</p>
+
+                <div id="modalAlertContainer"></div>
+
+                <div class="d-flex justify-content-center gap-2 my-3">
+                    <input type="text" maxlength="6" class="form-control text-center fs-4 fw-bold letter-spacing-2" id="otpCode" placeholder="123456" style="letter-spacing: 5px;">
+                </div>
+                <button class="btn btn-success w-100 my-2" id="verifyOtpBtn">Verify & Update</button>
+                <p class="text-center mt-2"><button class="btn btn-link p-0 text-decoration-none" type="button" id="resendOtpBtn">Resend Code</button></p>
+                <button class="btn btn-link w-100 text-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// --- INFO UPDATE LOGIC ---
+document.getElementById('saveInfoBtn').addEventListener('click', function(event) {
+    let isValid = true;
+    const btn = this;
+    const contactInput = document.getElementById('contactInput');
+    const emailInput = document.getElementById('emailInput');
+    const emailFeedback = document.getElementById('emailFeedback');
+    const contactFeedback = document.getElementById('contactFeedback');
+    
+    contactInput.classList.remove('is-invalid');
+    emailInput.classList.remove('is-invalid');
+
+    if (!/^[0-9]{11}$/.test(contactInput.value.trim())) {
+        contactInput.classList.add('is-invalid'); contactFeedback.innerText = "Contact number must be 11 digits."; isValid = false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+        emailInput.classList.add('is-invalid'); emailFeedback.innerText = "Invalid email format."; isValid = false;
+    }
+
+    if (!isValid) { event.preventDefault(); return; }
+
+    const originalEmail = document.getElementById('originalEmail').value;
+    const newEmail = emailInput.value.trim();
+
+    if (newEmail !== originalEmail) {
+        // Email changed? Use AJAX & 2FA
+        event.preventDefault(); 
+        btn.disabled = true;
+        btn.innerHTML = "Checking...";
+
+        const formData = new FormData();
+        formData.append('email', newEmail);
+        formData.append('contact', contactInput.value.trim());
+        formData.append('civil_status', document.getElementById('civilStatus').value);
+
+        fetch('send_profile_otp.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = "Save Changes";
+
+            if (data.status === 'success') {
+                document.getElementById('otpMessage').innerHTML = `Enter the code sent to <strong>${data.masked_email}</strong>`;
+                new bootstrap.Modal(document.getElementById('otpModal')).show();
+            } 
+            else if (data.status === 'error') {
+                // SHOW ERROR AT THE TOP ALERT BOX
+                const alertHtml = `
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="ri-error-warning-fill me-2"></i> ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+                
+                document.getElementById('alertContainer').innerHTML = alertHtml;
+                window.scrollTo(0, 0); // Scroll to top
+
+                // OPTIONAL: Keep field red for clarity (User prefers top alert, but red border is UX standard)
+                if (data.field === 'email') emailInput.classList.add('is-invalid');
+                if (data.field === 'contact') contactInput.classList.add('is-invalid');
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = "Save Changes";
+            alert("An error occurred. Please try again.");
+        });
+    }
+    // If email not changed, form submits normally to PHP logic
+});
+
+// --- VERIFY ---
+document.getElementById('verifyOtpBtn').addEventListener('click', function() {
+    const code = document.getElementById('otpCode').value.trim();
+    if(code.length < 6) return alert("Please enter code");
+    const btn = this;
+    btn.disabled = true; btn.innerHTML = "Verifying...";
+    const fd = new FormData(); fd.append('code', code);
+    fetch('verify_profile_update.php', { method: 'POST', body: fd }).then(r=>r.json()).then(data=>{
+        if(data.status==='success'){ 
+            // RELOAD -> PHP SESSION SUCCESS MESSAGE WILL APPEAR ON TOP
+            location.reload(); 
+        }
+        else { alert(data.message); btn.disabled=false; btn.innerHTML="Verify & Update"; }
+    });
+});
+
+// --- RESEND ---
+document.getElementById('resendOtpBtn').addEventListener('click', function(){
+    const btn = this;
+    btn.disabled = true; 
+    btn.innerText = "Sending...";
+
+    fetch('resend_profile_code.php', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+        if(d.status === 'success') {
+            // SUCCESS: Show Green Alert inside Modal
+            const alertHtml = `
+                <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
+                    <i class="ri-check-double-line me-1"></i> New verification code sent!
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+                </div>`;
+            document.getElementById('modalAlertContainer').innerHTML = alertHtml;
+        } else {
+            // ERROR: Show Red Alert inside Modal
+            const alertHtml = `
+                <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+                    ${d.message}
+                    <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+                </div>`;
+            document.getElementById('modalAlertContainer').innerHTML = alertHtml;
+        }
+        
+        btn.disabled = false; 
+        btn.innerText = "Resend Code";
+    })
+    .catch(err => {
+        console.error(err);
+        btn.disabled = false; 
+        btn.innerText = "Resend Code";
+    });
+});
+
+// --- PASSWORD VALIDATION ---
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+
+    toggleButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            const targetId = button.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = button.querySelector('i');
+
+            if (!input || !icon) {
+                return;
+            }
+
+            if (input.type === 'password') {
+                // Password is hidden, so show it and change icon to open eye
+                input.type = 'text';
+                icon.classList.remove('ri-eye-off-line');
+                icon.classList.add('ri-eye-line');
+                button.setAttribute('aria-label', 'Hide password');
+            } else {
+                // Password is visible, so hide it and change icon to eye-off
+                input.type = 'password';
+                icon.classList.remove('ri-eye-line');
+                icon.classList.add('ri-eye-off-line');
+                button.setAttribute('aria-label', 'Show password');
+            }
+        });
+    });
+
+    const passwordForm = document.getElementById('passwordForm');
+    const currentPassword = document.getElementById('currentPassword');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+
+    const currentFeedback = document.getElementById('currentPasswordFeedback');
+    const newFeedback = document.getElementById('newPasswordFeedback');
+    const confirmFeedback = document.getElementById('confirmPasswordFeedback');
+
+    function setRule(ruleId, isValid) {
+        const rule = document.getElementById(ruleId);
+
+        if (!rule) {
+            return;
+        }
+
+        const icon = rule.querySelector('i');
+
+        if (isValid) {
+            rule.classList.remove('text-muted', 'text-danger');
+            rule.classList.add('text-success');
+
+            if (icon) {
+                icon.classList.remove('ri-close-circle-line');
+                icon.classList.add('ri-checkbox-circle-line');
+            }
+        } else {
+            rule.classList.remove('text-success');
+            rule.classList.add('text-muted');
+
+            if (icon) {
+                icon.classList.remove('ri-checkbox-circle-line');
+                icon.classList.add('ri-close-circle-line');
+            }
+        }
+    }
+
+    function validateNewPassword() {
+        const value = newPassword.value;
+
+        const hasLength = value.length >= 8;
+        const hasUpper = /[A-Z]/.test(value);
+        const hasLower = /[a-z]/.test(value);
+        const hasNumber = /[0-9]/.test(value);
+        const hasSpecial = /[^A-Za-z0-9]/.test(value);
+
+        setRule('ruleLength', hasLength);
+        setRule('ruleUpper', hasUpper);
+        setRule('ruleLower', hasLower);
+        setRule('ruleNumber', hasNumber);
+        setRule('ruleSpecial', hasSpecial);
+
+        return hasLength && hasUpper && hasLower && hasNumber && hasSpecial;
+    }
+
+    function validateConfirmPassword() {
+        return newPassword.value === confirmPassword.value && confirmPassword.value !== '';
+    }
+
+    if (newPassword) {
+        newPassword.addEventListener('input', function () {
+            validateNewPassword();
+
+            newPassword.classList.remove('is-invalid');
+            newFeedback.innerText = '';
+
+            if (confirmPassword.value !== '') {
+                if (validateConfirmPassword()) {
+                    confirmPassword.classList.remove('is-invalid');
+                    confirmFeedback.innerText = '';
+                } else {
+                    confirmPassword.classList.add('is-invalid');
+                    confirmFeedback.innerText = 'Passwords do not match.';
+                }
+            }
+        });
+    }
+
+    if (confirmPassword) {
+        confirmPassword.addEventListener('input', function () {
+            if (validateConfirmPassword()) {
+                confirmPassword.classList.remove('is-invalid');
+                confirmFeedback.innerText = '';
+            } else {
+                confirmPassword.classList.add('is-invalid');
+                confirmFeedback.innerText = 'Passwords do not match.';
+            }
+        });
+    }
+
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function (event) {
+            let isValid = true;
+
+            currentPassword.classList.remove('is-invalid');
+            newPassword.classList.remove('is-invalid');
+            confirmPassword.classList.remove('is-invalid');
+
+            currentFeedback.innerText = '';
+            newFeedback.innerText = '';
+            confirmFeedback.innerText = '';
+
+            if (currentPassword.value.trim() === '') {
+                currentPassword.classList.add('is-invalid');
+                currentFeedback.innerText = 'Current password is required.';
+                isValid = false;
+            }
+
+            if (!validateNewPassword()) {
+                newPassword.classList.add('is-invalid');
+                newFeedback.innerText = 'Password must meet all security requirements.';
+                isValid = false;
+            }
+
+            if (newPassword.value === currentPassword.value && newPassword.value !== '') {
+                newPassword.classList.add('is-invalid');
+                newFeedback.innerText = 'New password cannot be the same as your current password.';
+                isValid = false;
+            }
+
+            if (!validateConfirmPassword()) {
+                confirmPassword.classList.add('is-invalid');
+                confirmFeedback.innerText = 'Passwords do not match.';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q-DOC Registration</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="./assets/css/style.css?v=25">
+</head>
+<body>
+
+<div class="register-page d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="row gx-5">
+            <div class="col-lg-6 text-white d-flex flex-column justify-content-center mb-5 mb-lg-0">
+                <h1 class="text-white display-2 fw-bold">Join <span class="text-yellow">Q-DOC Portal</span></h1>
+                <p class="lead mt-0">Register to access all community services and features.</p>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="register-card p-4 shadow-sm rounded-4 bg-white">
+                    <h3 class="fw-bold mb-1"><i class="ri-account-circle-fill"></i> Register</h3>
+                    <p class="text-muted mb-4">Enter your information to create an account.</p>
+
+                    <form id="registerForm" method="POST" enctype="multipart/form-data">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">REGISTER AS</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="role" id="resident" value="Resident" checked>
+                                <label class="btn btn-outline-primary" for="resident"><i class="ri-home-4-line"></i> Resident</label>
+
+                                <input type="radio" class="btn-check" name="role" id="official" value="Official">
+                                <label class="btn btn-outline-primary" for="official"><i class="ri-user-line"></i> Official</label>
+
+                                <input type="radio" class="btn-check" name="role" id="admin" value="Admin">
+                                <label class="btn btn-outline-primary" for="admin"><i class="ri-shield-line"></i> Admin</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-none" id="secretCodeGroup">
+                            <label class="form-label fw-bold text-danger">ADMIN ACCESS CODE <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white"><i class="ri-key-2-line"></i></span>
+                                <input type="password" class="form-control border-danger" id="accessCode" name="access_code" placeholder="Enter secret passkey">
+                            </div>
+                            <span id="accessCodeError" class="text-danger fw-bold mt-1"></span>
+                        </div>
+
+                        <div class="mb-3 d-none" id="officialFields">
+                            <label class="form-label fw-bold">OFFICIAL POSITION <span class="text-danger">*</span></label>
+                            <select class="form-select" id="position" name="position">
+                                <option value="">Select Position</option>
+                                <option value="Barangay Captain">Barangay Captain</option>
+                                <option value="Kagawad">Barangay Kagawad</option>
+                                <option value="Secretary">Secretary</option>
+                                <option value="Treasurer">Treasurer</option>
+                                <option value="SK Chairman">SK Chairman</option>
+                            </select>
+                            <span id="positionError" class="text-danger fw-bold mt-1"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">FULL NAME <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ri-user-line"></i></span>
+                                <input type="text" class="form-control" id="fullname" name="fullname" placeholder="Full Name" required>
+                            </div>
+                            <span id="fullnameError" class="text-danger fw-bold mt-1"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">EMAIL ADDRESS <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ri-mail-line"></i></span>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
+                            </div>
+                            <span id="emailError" class="text-danger fw-bold mt-1"></span>
+                        </div>
+                        
+                        <div id="residentFields">
+                            
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label fw-bold">BIRTHDATE <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="birthdate" name="birthdate">
+                                    <span id="birthdateError" class="text-danger fw-bold mt-1"></span>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label fw-bold">SEX <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="ri-group-line"></i></span>
+                                        <select class="form-select" id="sex" name="sex">
+                                            <option value="">Select</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Male">Male</option>
+                                        </select>
+                                    </div>
+                                    <span id="sexError" class="text-danger fw-bold mt-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label fw-bold">CIVIL STATUS <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="ri-service-line"></i></span>
+                                        <select class="form-select" id="civil_status" name="civil_status">
+                                            <option value="">Select</option>
+                                            <option value="Single">Single</option>
+                                            <option value="Married">Married</option>
+                                            <option value="Widowed">Widowed</option>
+                                        </select>
+                                    </div>
+                                    <span id="civilStatusError" class="text-danger fw-bold mt-1"></span>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label fw-bold">CONTACT NUMBER <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="ri-phone-line"></i></span>
+                                        <input type="tel" class="form-control" id="contact" name="contact" placeholder="09123456789" pattern="[0-9]{11}">
+                                    </div>
+                                    <span id="contactError" class="text-danger fw-bold mt-1"></span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">ADDRESS <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="ri-map-pin-line"></i></span>
+                                    <input type="text" class="form-control" id="address" name="address" placeholder="House #, Street">
+                                </div>
+                                <span id="addressError" class="text-danger fw-bold mt-1"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">UPLOAD VALID ID (Front & Back) <span class="text-danger">*</span></label>
+                                <div class="row g-3">
+                                    <div class="col-md-6 d-flex flex-column align-items-center">
+                                        <input type="file" class="form-control mb-3" id="idFront" name="id_front" accept="image/*">
+                                        <div class="d-flex justify-content-center">
+                                            <img id="previewFront" src="#" alt="Front Preview" class="img-fluid rounded" style="display:none; max-width:200px;">
+                                        </div>
+                                        <span id="idFrontError" class="text-danger fw-bold mt-1"></span>
+                                    </div>
+
+                                    <div class="col-md-6 d-flex flex-column align-items-center">
+                                        <input type="file" class="form-control mb-3" id="idBack" name="id_back" accept="image/*">
+                                        <div class="d-flex justify-content-center">
+                                            <img id="previewBack" src="#" alt="Back Preview" class="img-fluid rounded" style="display:none; max-width:200px;">
+                                        </div>
+                                        <span id="idBackError" class="text-danger fw-bold mt-1"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">UPLOAD PROFILE PICTURE <span class="text-danger">*</span></label>
+                                <input type="file" class="form-control mb-3" id="profilePic" name="profile_picture" accept="image/*">
+                                <div class="d-flex justify-content-center">
+                                    <img id="previewProfile" src="#" alt="Profile Preview" 
+                                        class="img-fluid rounded-circle" 
+                                        style="display:none; max-width:150px;">
+                                </div>
+                                <span id="profilePicError" class="text-danger fw-bold mt-1"></span>
+                            </div>
+                        </div> 
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">PASSWORD <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ri-lock-line"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                <span class="input-group-text">
+                                    <i class="ri-eye-off-line" id="togglePassword" style="cursor:pointer;"></i>
+                                </span>
+                            </div>
+                            <span id="passwordError" class="text-danger fw-bold mt-1"></span>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold">CONFIRM PASSWORD <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ri-lock-line"></i></span>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirm Password" required>
+                                <span class="input-group-text">
+                                    <i class="ri-eye-off-line" id="toggleConfirmPassword" style="cursor:pointer;"></i>
+                                </span>
+                            </div>
+                            <span id="confirmPasswordError" class="text-danger fw-bold mt-1"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="terms.html" target="_blank">Terms</a> and <a href="privacy.html" target="_blank">Privacy Policy</a><span class="text-danger">*</span>
+                            </label>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100 mt-3" id="registerBtn">Register</button>
+                        <p class="text-center mt-3">Already have an account? <a href="login.php">Login here</a></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="verificationModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4">
+    <h2 class="fw-bold text-center">Two-Factor Authentication</h2>
+    <p class="text-center text-muted">
+        To continue, we need to confirm your action.<br>
+        Please enter the verification code.
+    </p>
+    <p class="text-center text-muted" id="maskedEmailInfo"></p>
+
+    <div id="resendFeedback" class="mb-2"></div>
+
+    <div class="d-flex justify-content-center gap-2 my-3">
+        <input type="text" inputmode="numeric" maxlength="1" class="verify-code form-control text-center fs-4" id="v1">
+        <input type="text" inputmode="numeric" maxlength="1" class="verify-code form-control text-center fs-4" id="v2">
+        <input type="text" inputmode="numeric" maxlength="1" class="verify-code form-control text-center fs-4" id="v3">
+        <input type="text" inputmode="numeric" maxlength="1" class="verify-code form-control text-center fs-4" id="v4">
+        <input type="text" inputmode="numeric" maxlength="1" class="verify-code form-control text-center fs-4" id="v5">
+        <input type="text" inputmode="numeric" maxlength="1" class="verify-code form-control text-center fs-4" id="v6">
+    </div>
+
+    <button class="btn btn-success w-100 my-2" id="verifyBtn" type="button" disabled>VERIFY</button>
+
+    <p class="text-center mt-2">
+        Need a new code? <button class="btn btn-link p-0" type="button" id="resendCodeBtn">Resend code</button>
+    </p>
+
+    <p class="text-center text-danger fw-bold" id="timerText"></p>
+
+    <button class="btn btn-link w-100 text-center mt-3" data-bs-dismiss="modal">
+        Cancel
+    </button>
+    </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // ===================== ELEMENTS =====================
+    const registerBtn = document.getElementById('registerBtn');
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    const fullname = document.querySelector('input[name="fullname"]');
+    const birthdate = document.querySelector('input[name="birthdate"]');
+    const sex = document.querySelector('select[name="sex"]');
+    const civilStatus = document.querySelector('select[name="civil_status"]');
+    const address = document.querySelector('input[name="address"]');
+    const contact = document.getElementById("contact");
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const email = document.getElementById("email");
+    const terms = document.getElementById('terms');
+    const registerForm = document.getElementById('registerForm');
+    
+    // New elements for Option A logic
+    const accessCode = document.getElementById("accessCode");
+    const position = document.getElementById("position");
+    const residentFields = document.getElementById("residentFields");
+    const secretCodeGroup = document.getElementById("secretCodeGroup");
+    const officialFields = document.getElementById("officialFields");
+
+    // Verification Modal elements
+    const boxes = document.querySelectorAll(".verify-code");
+    const verifyBtn = document.getElementById("verifyBtn");
+    const resendBtn = document.getElementById("resendCodeBtn");
+    const timerText = document.getElementById("timerText");
+    const verificationModalEl = document.getElementById("verificationModal");
+    const verificationModal = new bootstrap.Modal(verificationModalEl);
+    
+    // File inputs
+    const idFront = document.getElementById("idFront");
+    const idBack = document.getElementById("idBack");
+    const profilePic = document.getElementById("profilePic");
+
+    // ===================== HELPER: LOADING STATE =====================
+    function setLoading(btn, isLoading, loadingText = "Loading...") {
+        if (isLoading) {
+            // Save original text
+            if (!btn.dataset.originalText) {
+                btn.dataset.originalText = btn.innerHTML;
+            }
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${loadingText}`;
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = btn.dataset.originalText;
+        }
+    }
+
+    // ===================== A. FIELD TOGGLING LOGIC =====================
+    function toggleFields() {
+        const role = document.querySelector('input[name="role"]:checked').value;
+        
+        residentFields.classList.add("d-none");
+        secretCodeGroup.classList.add("d-none");
+        officialFields.classList.add("d-none");
+
+        const isResident = (role === "Resident");
+        // Set required logic
+        birthdate.required = isResident;
+        sex.required = isResident;
+        civilStatus.required = isResident;
+        address.required = isResident;
+        contact.required = isResident;
+        idFront.required = isResident;
+        idBack.required = isResident;
+        profilePic.required = isResident;
+        
+        accessCode.required = (role === "Official" || role === "Admin");
+        position.required = (role === "Official");
+
+        if (role === "Resident") {
+            residentFields.classList.remove("d-none");
+        } else if (role === "Official") {
+            secretCodeGroup.classList.remove("d-none");
+            officialFields.classList.remove("d-none");
+        } else if (role === "Admin") {
+            secretCodeGroup.classList.remove("d-none");
+        }
+        
+        registerBtn.innerHTML = `Register as ${role}`;
+        delete registerBtn.dataset.originalText; 
+    }
+    
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', toggleFields);
+    });
+    
+    toggleFields(); // Init
+    
+    // ===================== B. PASSWORD SHOW/HIDE =====================
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+
+    togglePassword.addEventListener('click', () => {
+        if (password.type === 'password') {
+            password.type = 'text';
+
+            togglePassword.classList.remove('ri-eye-off-line');
+            togglePassword.classList.add('ri-eye-line');
+        } else {
+            password.type = 'password';
+
+            togglePassword.classList.remove('ri-eye-line');
+            togglePassword.classList.add('ri-eye-off-line');
+        }
+    });
+
+    toggleConfirmPassword.addEventListener('click', () => {
+        if (confirmPassword.type === 'password') {
+            confirmPassword.type = 'text';
+
+            toggleConfirmPassword.classList.remove('ri-eye-off-line');
+            toggleConfirmPassword.classList.add('ri-eye-line');
+        } else {
+            confirmPassword.type = 'password';
+
+            toggleConfirmPassword.classList.remove('ri-eye-line');
+            toggleConfirmPassword.classList.add('ri-eye-off-line');
+        }
+    });
+
+    // ===================== C. FILE PREVIEWS =====================
+    function previewFile(inputId, previewId){
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        input.addEventListener('change', function(event){
+            const file = event.target.files[0];
+            if(file){
+                const reader = new FileReader();
+                reader.onload = function(e){
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    previewFile('idFront', 'previewFront');
+    previewFile('idBack', 'previewBack');
+    previewFile('profilePic', 'previewProfile');
+
+    // ===================== D. TERMS CHECKBOX =====================
+    registerBtn.disabled = !terms.checked;
+    terms.addEventListener('change', () => {
+        registerBtn.disabled = !terms.checked;
+    });
+    
+    // ===================== E. MASTER VALIDATION AND SUBMISSION ===================== 
+    registerBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        
+        // Clear previous error text elements
+        document.querySelectorAll('span[id$="Error"]').forEach(span => span.innerText = "");
+
+        let isValid = true;
+        const role = document.querySelector('input[name="role"]:checked').value;
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        // --- 1. GLOBAL CHECKS ---
+        if(fullname.value.trim() === ""){
+            document.getElementById('fullnameError').innerText = "Please enter your full name.";
+            isValid = false;
+        }
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email.value.trim())) {
+            document.getElementById('emailError').innerText = "Please enter a valid email address.";
+            isValid = false;
+        }
+        const strongPwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+        if(!strongPwd.test(password.value)){
+            document.getElementById('passwordError').innerText = 'Password must be 8+ characters, with Upper, Lower, Number & Special character.';
+            isValid = false;
+        }
+        if(password.value !== confirmPassword.value){
+            document.getElementById('confirmPasswordError').innerText = 'Passwords do not match!';
+            isValid = false;
+        }
+        if(!terms.checked){
+            // Use SweetAlert instead of basic alert
+            Swal.fire({
+                icon: 'warning',
+                title: 'Terms Required',
+                text: 'You must agree to the Terms and Privacy Policy to continue.',
+                confirmButtonColor: '#0A3E9F'
+            });
+            isValid = false;
+        }
+
+        // --- 2. RESIDENT SPECIFIC CHECKS ---
+        if (role === 'Resident') {
+            if(birthdate.value === ""){ document.getElementById('birthdateError').innerText = "Please enter your birthdate."; isValid = false; }
+            if(sex.value === ""){ document.getElementById('sexError').innerText = "Please select your gender."; isValid = false; }
+            if(civilStatus.value === ""){ document.getElementById('civilStatusError').innerText = "Please select your civil status."; isValid = false; }
+            if(address.value.trim() === ""){ document.getElementById('addressError').innerText = "Please enter your address."; isValid = false; }
+            
+            const contactPattern = /^[0-9]{11}$/;
+            if (!contactPattern.test(contact.value.trim())) {
+                document.getElementById('contactError').innerText = "Contact number must be 11 digits.";
+                isValid = false;
+            }
+
+            // File Checks
+            if (!idFront.files[0]) {
+                document.getElementById('idFrontError').innerText = "Please upload the front side of your ID.";
+                isValid = false;
+            } else if (!allowedTypes.includes(idFront.files[0].type) || idFront.files[0].size > maxSize) {
+                document.getElementById('idFrontError').innerText = "Invalid front ID file. Please upload a valid image.";
+                isValid = false;
+            }
+
+            if (!idBack.files[0]) {
+                document.getElementById('idBackError').innerText = "Please upload the back side of your ID.";
+                isValid = false;
+            } else if (!allowedTypes.includes(idBack.files[0].type) || idBack.files[0].size > maxSize) {
+                document.getElementById('idBackError').innerText = "Invalid back ID file. Please upload a valid image.";
+                isValid = false;
+            }
+
+            if (!profilePic.files[0]) {
+                document.getElementById('profilePicError').innerText = "Please upload your profile picture.";
+                isValid = false;
+            } else if (!allowedTypes.includes(profilePic.files[0].type) || profilePic.files[0].size > maxSize) {
+                document.getElementById('profilePicError').innerText = "Invalid profile picture. Please upload a valid image.";
+                isValid = false;
+            }
+        }
+
+        // --- 3. OFFICIAL/ADMIN SPECIFIC CHECKS ---
+        if (role === 'Official' || role === 'Admin') {
+            if (accessCode.value.trim() === "") {
+                document.getElementById('accessCodeError').innerText = "Please enter access code."; isValid = false;
+            }
+        }
+        if (role === 'Official') {
+            if (position.value === "") {
+                document.getElementById('positionError').innerText = "Please select your position."; isValid = false;
+            }
+        }
+
+        // --- 4. AJAX SUBMISSION WITH LOADING ---
+        if (isValid){
+            setLoading(registerBtn, true, "Sending Code...");
+
+            const formData = new FormData(registerForm);
+
+            fetch("send_verification_code.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                setLoading(registerBtn, false);
+
+                if(data.status === "success"){
+                    // Show modal
+                    document.getElementById("maskedEmailInfo").innerHTML =
+                        `Enter the 6-digit code we sent to <strong>${data.masked_email}</strong>. This code is valid for 5 minutes.`;
+
+                    verificationModal.show();
+
+                    // Reset verification inputs
+                    boxes.forEach(box => box.value = "");
+                    boxes[0].focus();
+                    verifyBtn.disabled = true;
+                    startTimer(300);
+                } else {
+                    // ERROR UI using SweetAlert2
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Registration Failed',
+                        text: data.message, 
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            })
+            .catch(err => {
+                setLoading(registerBtn, false);
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Something went wrong. Please try again.',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        }
+    });
+
+    // ===================== F. VERIFICATION INPUTS =====================
+    function checkVerifyReady() {
+        const allFilled = Array.from(boxes).every(box => box.value.trim() !== "");
+        verifyBtn.disabled = !allFilled;
+    }
+
+    boxes.forEach((box, index) => {
+        box.addEventListener("input", () => {
+            if(box.value.length === 1 && index < boxes.length - 1) boxes[index+1].focus();
+            checkVerifyReady();
+        });
+        box.addEventListener("keydown", (e) => {
+            if(e.key === "Backspace" && box.value === "" && index > 0) boxes[index-1].focus();
+        });
+    });
+
+    // ===================== G. VERIFY CODE BUTTON WITH LOADING =====================
+    verifyBtn.addEventListener("click", () => {
+        let code = "";
+        boxes.forEach(box => code += box.value);
+
+        setLoading(verifyBtn, true, "Verifying...");
+
+        fetch("verify_and_save.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: "code=" + code
+        })
+        .then(r => r.json())
+        .then(data => {
+            setLoading(verifyBtn, false);
+
+            if(data.status === "success"){
+                // SUCCESS UI using SweetAlert2
+                verificationModal.hide();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Account Created!',
+                    text: 'You have been successfully registered.',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = "login.php";
+                });
+            } else {
+                // INVALID CODE UI using SweetAlert2
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Code',
+                    text: data.message,
+                    confirmButtonColor: '#dc3545'
+                });
+                boxes.forEach(box => box.value = ""); // Clear invalid code
+                boxes[0].focus();
+            }
+        })
+        .catch(err => {
+            setLoading(verifyBtn, false);
+            console.error(err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong.' });
+        });
+    });
+
+    // ===================== H. RESEND CODE BUTTON =====================
+    resendBtn.addEventListener("click", () => {
+        const originalText = resendBtn.textContent;
+        const feedbackDiv = document.getElementById("resendFeedback");
+        
+        resendBtn.textContent = "Sending...";
+        resendBtn.disabled = true;
+        feedbackDiv.innerHTML = "";
+
+        const formData = new FormData(registerForm);
+
+        fetch("resend_code.php", { method: "POST", body: formData })
+        .then(r => r.json())
+        .then(data => {
+            resendBtn.textContent = originalText;
+            
+            if(data.status === "success"){
+                // Show Bootstrap Alert inside modal (Clean UX)
+                feedbackDiv.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show py-2 small shadow-sm border-0" role="alert">
+                        <i class="ri-checkbox-circle-fill me-1"></i> New code sent! Check your email.
+                        <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+                    </div>`;
+                
+                boxes.forEach(box => box.value = "");
+                verifyBtn.disabled = true;
+                startTimer(300); // Restart timer
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show py-2 small shadow-sm border-0" role="alert">
+                        <i class="ri-error-warning-fill me-1"></i> ${data.message}
+                        <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+                    </div>`;
+                resendBtn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            resendBtn.textContent = originalText;
+            resendBtn.disabled = false;
+            feedbackDiv.innerHTML = `
+                <div class="alert alert-danger py-2 small" role="alert">
+                    Network error. Please try again.
+                </div>`;
+        });
+    });
+    
+    // ===================== I. TIMER =====================
+    let currentInterval;
+    function startTimer(duration){
+        if (currentInterval) clearInterval(currentInterval);
+        let timer = duration;
+        resendBtn.disabled = true;
+
+        currentInterval = setInterval(() => {
+            let minutes = Math.floor(timer/60);
+            let seconds = timer % 60;
+            timerText.innerHTML = `Code expires in: ${minutes}:${seconds < 10 ? "0"+seconds : seconds}`;
+
+            if(timer <= 0){
+                clearInterval(currentInterval);
+                timerText.innerHTML = "Code expired. Please resend.";
+                resendBtn.disabled = false;
+            }
+            timer--;
+        }, 1000);
+    }
+});
+</script>
+</body>
+</html>

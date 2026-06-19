@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings | Q-DOC</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css?v=25">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body { background-color: #F4F7FA; min-height: 100vh; display: flex; font-family: 'Poppins', sans-serif; overflow: hidden; }
+
+        .sidebar-admin { width: 280px; background: linear-gradient(180deg, #0A3E9F 0%, #062a6e 100%); color: white; display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; bottom: 0; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.05); }
+        .sidebar-header { padding: 25px; flex-shrink: 0; }
+        .brand-title { font-weight: 600; font-size: 1.3rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+        .sidebar-nav { flex: 1; padding: 0 7px; overflow-y: auto; scrollbar-width: none; }
+        .nav-link { color: rgba(255,255,255,0.7); font-size: 0.90rem; padding: 10px 18px; border-radius: 12px; margin-bottom: 5px; display: flex; align-items: center; transition: all 0.3s ease; font-weight: 500; }
+        .nav-link i { font-size: 1.20rem; margin-right: 12px; width: 24px; text-align: center; transition: 0.3s; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(3px); }
+        .nav-link.active { background: white; color: #0A3E9F; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .nav-link.active i { color: #0A3E9F; }
+        .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+        .user-card { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; text-decoration: none; color: white; transition: 0.3s; margin-bottom: 12px; }
+        .user-card:hover { background: rgba(255,255,255,0.08); }
+        .sidebar-user-avatar { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; }
+        .sidebar-user-initials { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.3); font-size: 1rem; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-info h6 { margin: 0; font-size: 0.95rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-info small { font-size: 0.75rem; color: rgba(255,255,255,0.6); display: block; letter-spacing: 0.5px; }
+        .logout-btn-sidebar { display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.1); color: white; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .logout-btn-sidebar:hover { background: #dc3545; border-color: #dc3545; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); }
+
+        .main-content-admin {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            height: 100vh;
+            overflow-y: auto;
+            display: block;
+            width: calc(100% - 280px);
+            padding-bottom: 100px;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            overflow: visible;
+        }
+
+        .nav-tabs { border-bottom: 1px solid #f1f5f9; padding: 0 10px; }
+        .nav-tabs .nav-link { color: #64748b; font-weight: 600; border: none; padding: 15px 20px; border-bottom: 3px solid transparent; transition: 0.3s; font-size: 0.9rem; }
+        .nav-tabs .nav-link.active { color: #0A3E9F; border-bottom-color: #0A3E9F; background: transparent; }
+
+        .form-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 5px; letter-spacing: 0.5px; }
+        .form-control { padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .form-control:focus { border-color: #0A3E9F; box-shadow: 0 0 0 3px rgba(10, 62, 159, 0.1); }
+
+        .section-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+        .section-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+
+        .img-preview { width: 100px; height: 100px; object-fit: contain; border: 2px dashed #cbd5e1; border-radius: 10px; padding: 5px; background: #f8fafc; }
+
+        .accordion-button:not(.collapsed) { background-color: #e0f2fe; color: #0A3E9F; }
+        .accordion-button:focus { box-shadow: none; border-color: rgba(0,0,0,0.1); }
+
+        .toggle-status-text {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.78rem;
+        }
+
+        .form-switch .form-check-input {
+            transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        #maintenanceModeToggle:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar-admin { display: none; }
+            .main-content-admin { margin-left: 0; width: 100%; padding: 1.5rem; overflow: visible; height: auto; min-height: 100vh; }
+            body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-admin d-none d-lg-flex">
+        <div class="sidebar-header">
+            <div class="brand-title"><i class="ri-shield-user-fill me-2"></i> Admin Portal</div>
+        </div>
+
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="users_admin.php"><i class="ri-group-line"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="managedocs_admin.php"><i class="ri-folder-open-line"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link" href="reports_admin.php"><i class="ri-pie-chart-line"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="logs_admin.php"><i class="ri-history-line"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link active" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="profile_admin.php" class="user-card">
+                {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="User" class="sidebar-user-avatar">
+                {% else %}
+                    <div class="sidebar-user-initials">{{ initials }}</div>
+                {% endif %}
+
+                <div class="user-info">
+                    <h6>{{ admin_name|e }}</h6>
+                    <small>{{ admin_role|e }}</small>
+                </div>
+            </a>
+
+            <a href="logout.php" class="logout-btn-sidebar">
+                <i class="ri-logout-box-r-line me-2"></i> Sign Out
+            </a>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="mobileMenu">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-white"><i class="ri-admin-line me-2"></i> Admin Portal</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <ul class="nav flex-column p-3 gap-2 mb-auto">
+                <li class="nav-item"><a class="nav-link text-white" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold bg-primary rounded" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+
+            <div class="p-3 border-top border-secondary bg-dark">
+                <a href="profile_admin.php" class="d-flex align-items-center text-white text-decoration-none mb-3">
+                    {% if db_pic %}
+                        <img src="{{ db_pic }}" class="sidebar-user-avatar me-2" style="border:none;">
+                    {% else %}
+                        <div class="sidebar-user-initials me-2" style="width:38px;height:38px;font-size:0.8rem;">{{ initials }}</div>
+                    {% endif %}
+
+                    <div>
+                        <div class="fw-bold">{{ admin_name|e }}</div>
+                        <small class="text-white-50">{{ admin_role|e }}</small>
+                    </div>
+                </a>
+
+                <a class="btn btn-outline-danger w-100 btn-sm" href="logout.php">
+                    <i class="ri-logout-box-line me-2"></i> Sign Out
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content-admin">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark mb-1">System Settings</h3>
+                <p class="text-muted mb-0">Manage global configurations.</p>
+            </div>
+
+            <button class="btn btn-primary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i class="ri-menu-line"></i> Menu
+            </button>
+        </div>
+
+        <div class="settings-card">
+            <ul class="nav nav-tabs px-3" id="settingsTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general" type="button">General Info</button>
+                </li>
+
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#branding" type="button">Certificates</button>
+                </li>
+
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payment" type="button">Payment Options</button>
+                </li>
+
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#system" type="button">System Toggles</button>
+                </li>
+            </ul>
+
+            <div class="tab-content p-4">
+
+                <div class="tab-pane fade show active" id="general">
+                    <h5 class="section-title">Barangay Information</h5>
+                    <p class="section-desc">Details used for reports and the resident portal footer.</p>
+
+                    <form method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Barangay Name</label>
+                                <input type="text" name="brgy_name" class="form-control" value="{{ brgy_name|e }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">City / Municipality</label>
+                                <input type="text" name="city_name" class="form-control" value="{{ city_name|e }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Province</label>
+                                <input type="text" name="province_name" class="form-control" value="{{ province|e }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">System Email</label>
+                                <input type="email" name="sys_email" class="form-control" value="{{ sys_email|e }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Number</label>
+                                <input type="text" name="sys_contact" class="form-control" value="{{ sys_contact|e }}">
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" name="save_general" class="btn btn-primary fw-bold px-4 rounded-pill">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="branding">
+                    <h5 class="section-title">Certificates & Logos</h5>
+                    <p class="section-desc">Manage document signatories and logos.</p>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Punong Barangay Name</label>
+                                <input type="text" name="captain_name" class="form-control" value="{{ captain|e }}" placeholder="e.g. Hon. Juan Dela Cruz">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">City Logo (Left)</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{{ logo_l }}" class="img-preview" alt="Left Logo">
+                                    <input type="file" name="logo_left" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Barangay Logo (Right)</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{{ logo_r }}" class="img-preview" alt="Right Logo">
+                                    <input type="file" name="logo_right" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" name="save_branding" class="btn btn-primary fw-bold px-4 rounded-pill">
+                                Update Branding
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="payment">
+                    <h5 class="section-title">Payment Methods</h5>
+                    <p class="section-desc">Configure account details for residents to send payments.</p>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="accordion" id="paymentAccordion">
+
+                            <div class="accordion-item border-0 mb-3 shadow-sm rounded-3 overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#gcashCollapse">
+                                        <i class="ri-smartphone-line me-2 fs-5 text-primary"></i> GCash
+                                    </button>
+                                </h2>
+
+                                <div id="gcashCollapse" class="accordion-collapse collapse show" data-bs-parent="#paymentAccordion">
+                                    <div class="accordion-body bg-light">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">GCash Number</label>
+                                                <input type="text" name="gcash_number" class="form-control" value="{{ gcash_num|e }}" placeholder="09xxxxxxxxx">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Update QR Code</label>
+                                                <input type="file" name="gcash_qr" class="form-control">
+                                            </div>
+
+                                            <div class="col-12 mt-2">
+                                                <small>Current QR:</small><br>
+                                                <img src="{{ qr_gcash }}" style="height: 80px; border: 1px solid #ccc; border-radius: 5px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3 shadow-sm rounded-3 overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#mayaCollapse">
+                                        <i class="ri-wallet-3-line me-2 fs-5 text-success"></i> Maya
+                                    </button>
+                                </h2>
+
+                                <div id="mayaCollapse" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                                    <div class="accordion-body bg-light">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Maya Number</label>
+                                                <input type="text" name="maya_number" class="form-control" value="{{ maya_num|e }}" placeholder="09xxxxxxxxx">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Update QR Code</label>
+                                                <input type="file" name="maya_qr" class="form-control">
+                                            </div>
+
+                                            <div class="col-12 mt-2">
+                                                <small>Current QR:</small><br>
+                                                <img src="{{ qr_maya }}" style="height: 80px; border: 1px solid #ccc; border-radius: 5px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3 shadow-sm rounded-3 overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#bankCollapse">
+                                        <i class="ri-bank-line me-2 fs-5 text-warning"></i> Bank Transfer
+                                    </button>
+                                </h2>
+
+                                <div id="bankCollapse" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                                    <div class="accordion-body bg-light">
+                                        <div class="row g-3">
+                                            <div class="col-md-12">
+                                                <label class="form-label">Bank Name</label>
+                                                <input type="text" name="bank_name" class="form-control" value="{{ bank_name|e }}" placeholder="e.g. BDO, BPI, Landbank">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Account Number</label>
+                                                <input type="text" name="bank_account_num" class="form-control" value="{{ bank_acc|e }}">
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Account Name</label>
+                                                <input type="text" name="bank_account_name" class="form-control" value="{{ bank_user|e }}">
+                                            </div>
+
+                                            <div class="col-md-12 mt-3 border-top pt-3">
+                                                <label class="form-label d-block">Bank QR Code (Optional)</label>
+
+                                                <div class="d-flex align-items-start gap-3">
+                                                    <div class="flex-grow-1">
+                                                        <input type="file" name="bank_qr" class="form-control" accept=".jpg, .jpeg, .png">
+                                                        <div class="form-text text-muted small">
+                                                            Upload a QR image if your bank supports QR Ph scanning.
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="text-center">
+                                                        <img src="{{ qr_bank }}" class="border rounded p-1 bg-white" style="width: 80px; height: 80px; object-fit: contain;">
+                                                        <div class="small text-muted mt-1">Current</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" name="save_payment" class="btn btn-primary fw-bold px-4 rounded-pill">
+                                Update Payments
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="system">
+                    <h5 class="section-title">System Controls & Security</h5>
+                    <p class="section-desc">Manage portal access and registration codes.</p>
+
+                    <form method="POST">
+
+                        <div class="card bg-white border shadow-sm p-4 mb-4 rounded-3">
+                            <div class="d-flex align-items-center mb-3 text-primary">
+                                <i class="ri-lock-password-fill fs-4 me-2"></i>
+                                <h6 class="fw-bold mb-0">Registration Access Codes</h6>
+                            </div>
+
+                            <p class="text-muted small mb-3">
+                                These codes are required when registering as an Official or Admin.
+                            </p>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Official Code</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="ri-user-star-line"></i>
+                                        </span>
+
+                                        <input type="password" name="official_code" id="offCode" class="form-control fw-bold text-primary" value="{{ off_code|e }}">
+
+                                        <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleCode('offCode', this)">
+                                            <i class="ri-eye-off-line text-muted"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Admin Code</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">
+                                            <i class="ri-shield-keyhole-line"></i>
+                                        </span>
+
+                                        <input type="password" name="admin_code" id="admCode" class="form-control fw-bold text-danger" value="{{ adm_code|e }}">
+
+                                        <span class="input-group-text bg-white" style="cursor: pointer;" onclick="toggleCode('admCode', this)">
+                                            <i class="ri-eye-off-line text-muted"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card bg-light border-0 p-3 mb-3 rounded-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="ri-user-add-line text-success fs-5"></i>
+                                        <h6 class="fw-bold mb-0">Allow Registration</h6>
+                                    </div>
+
+                                    <p class="text-muted small mb-0">
+                                        If disabled, new residents cannot create accounts.
+                                    </p>
+
+                                    <small id="allowRegistrationText" class="toggle-status-text fw-bold"></small>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="allowRegistrationToggle"
+                                        name="allow_registration"
+                                        value="1"
+                                        style="width: 3em; height: 1.5em; cursor: pointer;"
+                                        {% if settings.allow_registration|int == 1 %}checked{% endif %}
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card bg-light border-0 p-3 mb-4 rounded-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="ri-shut-down-line text-danger fs-5"></i>
+                                        <h6 class="fw-bold mb-0">Maintenance Mode</h6>
+                                    </div>
+
+                                    <p class="text-muted small mb-0">
+                                        If enabled, residents cannot access the portal.
+                                    </p>
+
+                                    <small id="maintenanceModeText" class="toggle-status-text fw-bold"></small>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="maintenanceModeToggle"
+                                        name="maintenance_mode"
+                                        value="1"
+                                        style="width: 3em; height: 1.5em; cursor: pointer;"
+                                        {% if settings.maintenance_mode|int == 1 %}checked{% endif %}
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" name="save_system" class="btn btn-danger fw-bold px-4 rounded-pill">
+                                Apply System Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const activeTab = urlParams.get('tab');
+        if (activeTab) {
+            const triggerEl = document.querySelector(`button[data-bs-target="#${activeTab}"]`);
+            if (triggerEl) {
+                const tab = new bootstrap.Tab(triggerEl);
+                tab.show();
+            }
+        }
+
+        if (urlParams.has('success')) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Settings Updated',
+                text: 'Changes have been saved successfully.',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            });
+        }
+
+        function toggleCode(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('ri-eye-off-line');
+                icon.classList.add('ri-eye-line');
+            } else {
+                input.type = "password";
+                icon.classList.remove('ri-eye-line');
+                icon.classList.add('ri-eye-off-line');
+            }
+        }
+
+        function updateSystemToggleLabels() {
+            const allowToggle = document.getElementById('allowRegistrationToggle');
+            const maintenanceToggle = document.getElementById('maintenanceModeToggle');
+
+            const allowText = document.getElementById('allowRegistrationText');
+            const maintenanceText = document.getElementById('maintenanceModeText');
+
+            if (allowToggle && allowText) {
+                if (allowToggle.checked) {
+                    allowText.textContent = 'Currently ON - Registration is open.';
+                    allowText.className = 'toggle-status-text fw-bold text-success';
+                } else {
+                    allowText.textContent = 'Currently OFF - Registration is closed.';
+                    allowText.className = 'toggle-status-text fw-bold text-danger';
+                }
+            }
+
+            if (maintenanceToggle && maintenanceText) {
+                if (maintenanceToggle.checked) {
+                    maintenanceText.textContent = 'Currently ON - Resident portal is under maintenance.';
+                    maintenanceText.className = 'toggle-status-text fw-bold text-danger';
+                } else {
+                    maintenanceText.textContent = 'Currently OFF - Resident portal is available.';
+                    maintenanceText.className = 'toggle-status-text fw-bold text-success';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateSystemToggleLabels();
+
+            const allowToggle = document.getElementById('allowRegistrationToggle');
+            const maintenanceToggle = document.getElementById('maintenanceModeToggle');
+
+            if (allowToggle) {
+                allowToggle.addEventListener('change', updateSystemToggleLabels);
+            }
+
+            if (maintenanceToggle) {
+                maintenanceToggle.addEventListener('change', updateSystemToggleLabels);
+            }
+        });
+    </script>
+</body>
+</html>

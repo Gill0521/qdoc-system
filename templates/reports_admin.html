@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Transaction Ledger | Q-DOC</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css?v=25">
+
+<style>
+    /* --- GLOBAL LAYOUT --- */
+    body { background-color: #F4F7FA; min-height: 100vh; display: flex; font-family: 'Poppins', sans-serif; overflow: hidden; }
+    
+    /* --- SIDEBAR (Desktop) --- */
+    .sidebar-admin {
+        width: 280px;
+        background: linear-gradient(180deg, #0A3E9F 0%, #062a6e 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: fixed;
+        left: 0; top: 0; bottom: 0;
+        z-index: 1000;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+    }
+    
+    .sidebar-header { padding: 25px; flex-shrink: 0; }
+    .brand-title { font-weight: 600; font-size: 1.3rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+
+    /* Navigation Area */
+    .sidebar-nav { 
+        flex: 1; padding: 0 7px; 
+        overflow-y: auto; scrollbar-width: none; 
+    }
+    .sidebar-nav::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+        color: rgba(255,255,255,0.7); font-size: 0.90rem; padding: 10px 18px; border-radius: 12px; margin-bottom: 5px; display: flex; align-items: center; transition: all 0.3s ease; font-weight: 500;
+    }
+    .nav-link i { font-size: 1.20rem; margin-right: 12px; width: 24px; text-align: center; transition: 0.3s; }
+    .nav-link:hover { background: rgba(255,255,255,0.1); color: white; transform: translateX(3px); }
+    .nav-link.active { background: white; color: #0A3E9F; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+    .nav-link.active i { color: #0A3E9F; }
+
+    /* Sidebar Profile Footer */
+    .sidebar-footer {
+        padding: 20px; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+    }
+    
+    .user-card {
+        display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; text-decoration: none; color: white; transition: 0.3s; margin-bottom: 12px;
+    }
+    .user-card:hover { background: rgba(255,255,255,0.08); }
+    
+    .sidebar-user-avatar { width: 45px; height: 45px; min-width: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); }
+    .sidebar-user-initials {
+        width: 45px; height: 45px; min-width: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.3); font-size: 1rem;
+    }
+
+    .user-info { overflow: hidden; }
+    .user-info h6 { margin: 0; font-size: 0.95rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info small { font-size: 0.75rem; color: rgba(255,255,255,0.6); display: block; letter-spacing: 0.5px; }
+
+    .logout-btn-sidebar {
+        display: flex; align-items: center; justify-content: center; width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.1); color: white; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .logout-btn-sidebar:hover { background: #dc3545; border-color: #dc3545; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); }
+
+    /* --- MAIN CONTENT --- */
+    .main-content-admin { 
+        flex: 1; margin-left: 280px; padding: 1.5rem; 
+        height: 100vh; overflow-y: hidden; display: flex; flex-direction: column; width: calc(100% - 280px);
+    }
+
+    /* --- LEDGER SPECIFIC STYLES --- */
+    /* Filter Bar */
+    .filter-bar { background: white; border-bottom: 1px solid #e2e8f0; padding: 15px 20px; border-radius: 20px 20px 0 0; display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+    .form-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 2px; letter-spacing: 0.5px; }
+    .form-control, .form-select { font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; border-color: #cbd5e1; }
+
+    /* Table Container */
+    .ledger-container { 
+        background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+        flex: 1; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;
+    }
+    .table-responsive { flex: 1; overflow-y: auto; }
+    
+    /* Screen Table */
+    .table-ledger { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
+    .table-ledger thead th { 
+        background: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; 
+        padding: 15px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 10; font-size: 0.75rem; letter-spacing: 0.5px;
+    }
+    .table-ledger tbody td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; }
+    .table-ledger tbody tr:hover { background-color: #f8fafc; cursor: pointer; }
+
+    /* Screen Badges */
+    .badge-status { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid; text-transform: uppercase; letter-spacing: 0.5px; }
+    .st-pending { color: #d97706; background: #fffbeb; border-color: #fcd34d; }
+    .st-approved { color: #0284c7; background: #e0f2fe; border-color: #7dd3fc; }
+    .st-completed { color: #059669; background: #d1fae5; border-color: #6ee7b7; }
+    .st-rejected { color: #dc2626; background: #fee2e2; border-color: #fca5a5; }
+    .st-processing { color: #7c3aed; background: #f5f3ff; border-color: #c4b5fd; }
+    .st-pickup { color: #b45309; background: #fffbeb; border-color: #fcd34d; }
+
+    /* Screen Footer */
+    .ledger-footer { background: #f8fafc; border-top: 2px solid #e2e8f0; padding: 15px 25px; display: flex; justify-content: space-between; }
+    .summary-value { font-weight: 800; color: #0f172a; font-size: 1.1rem; }
+
+    /* --- MOBILE ADJUSTMENTS --- */
+    @media (max-width: 991px) {
+        .sidebar-admin { display: none; } 
+        .main-content-admin { margin-left: 0; width: 100%; padding: 1rem; overflow: visible; height: auto; min-height: 100vh; }
+        body { overflow: auto; }
+        .ledger-container { height: 600px; }
+        
+        .filter-bar { flex-direction: column; align-items: stretch; gap: 15px; }
+        .filter-bar > div { width: 100%; }
+        .header-actions { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .header-actions .d-flex { width: 100%; justify-content: space-between; }
+    }
+
+    /* --- PRINT LAYOUT --- */
+    #printHeader, #printFooter { display: none; } 
+
+    @media print {
+        @page { margin: 10mm; size: auto; } 
+        
+        /* Hide Screen UI */
+        .sidebar-admin, .offcanvas, .btn, .form-control, .form-select, .form-label, .filter-bar, .header-actions, .mobile-menu-btn { display: none !important; }
+
+        /* Document Body */
+        body { 
+            background: white; font-family: 'Tinos', 'Times New Roman', serif; color: black; 
+            width: 100%; height: auto; overflow: visible; display: block; -webkit-print-color-adjust: exact; 
+        }
+        
+        .main-content-admin { padding: 0; margin: 0; height: auto; overflow: visible; width: 100%; display: block; }
+        .table-responsive { overflow: visible; height: auto; width: 100%; display: block; }
+        
+        .ledger-container { 
+            background: transparent !important; border: none; box-shadow: none; height: auto; border-radius: 0; display: block; width: 100%; 
+        }
+        
+        /* Header */
+        #printHeader { display: block !important; position: relative; text-align: center; margin-bottom: 10px; width: 100%; line-height: 1.2; }
+        #printHeader h4 { margin: 0; font-weight: normal; font-size: 10pt; }
+        #printHeader h3 { margin: 5px 0 0 0; font-weight: bold; font-size: 12pt; text-transform: uppercase; }
+        
+        .header-logo-left { position: absolute; left: 0; top: 0; width: 70px; height: 70px; }
+        .header-logo-right { position: absolute; right: 0; top: 0; width: 70px; height: 70px; }
+        
+        /* Watermark */
+        .ledger-container::before {
+            content: ""; position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px;
+            background: url('{{ LOGO_RIGHT }}') no-repeat center; background-size: contain; opacity: 0.08; z-index: -1; pointer-events: none;
+        }
+
+        /* Table Design */
+        .table-ledger { 
+            width: 100%; border: 1px solid #000; border-collapse: collapse; font-size: 8pt; table-layout: fixed; margin-top: 5px; background: transparent !important; white-space: normal;
+        }
+        .table-ledger thead th { 
+            background: #eee !important; color: #000 !important; border: 1px solid #000; padding: 4px; text-align: center; font-size: 7.5pt; font-weight: bold; text-transform: uppercase;
+        }
+        .table-ledger tbody td { 
+            border: 1px solid #000; padding: 3px 4px; color: #000; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2;
+        }
+
+        /* Column Widths */
+        .table-ledger th:nth-child(1) { width: 5%; } 
+        .table-ledger th:nth-child(2) { width: 12%; } 
+        .table-ledger th:nth-child(3) { width: 24%; } 
+        .table-ledger th:nth-child(4) { width: 14%; } 
+        .table-ledger th:nth-child(5) { width: 19%; } 
+        .table-ledger th:nth-child(6) { width: 8%; } 
+        .table-ledger th:nth-child(7) { width: 10%; } 
+        .table-ledger th:nth-child(8) { width: 8%; } 
+
+        .badge-status { border: none; padding: 0; font-weight: normal; color: #000 !important; background: none !important; }
+        
+        .ledger-footer { display: none; } 
+        #printFooter { display: block !important; margin-top: 20px; page-break-inside: avoid; }
+        .signature-line { border-bottom: 1px solid black; width: 200px; margin-bottom: 5px; margin-top: 30px; }
+    }
+</style>
+</head>
+<body>
+
+    <div class="sidebar-admin d-none d-lg-flex">
+        <div class="sidebar-header">
+            <div class="brand-title">
+                <i class="ri-shield-user-fill me-2"></i> Admin Portal
+            </div>
+        </div>
+        
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="users_admin.php"><i class="ri-group-line"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="managedocs_admin.php"><i class="ri-folder-open-line"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link active" href="reports_admin.php"><i class="ri-pie-chart-line"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="logs_admin.php"><i class="ri-history-line"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="profile_admin.php" class="user-card" title="View Profile">
+                
+                    {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="User" class="sidebar-user-avatar">
+                
+                    {% else %}
+                    <div class="sidebar-user-initials">{{ initials }}</div>
+                    {% endif %}
+                
+                
+                <div class="user-info">
+                    <h6>{{ admin_name|e }}</h6>
+                    <small>{{ '' }}</small>
+                </div>
+            </a>
+            
+            <a href="logout.php" class="logout-btn-sidebar">
+                <i class="ri-logout-box-r-line me-2"></i> Sign Out
+            </a>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-white" id="mobileMenuLabel"><i class="ri-admin-line me-2"></i> Admin Portal</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <ul class="nav flex-column p-3 gap-2 mb-auto">
+                <li class="nav-item"><a class="nav-link text-white" href="dashboard_admin.php"><i class="ri-dashboard-3-line"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="users_admin.php"><i class="ri-group-line"></i> User Management</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="managedocs_admin.php"><i class="ri-folder-open-line"></i> Manage Docs</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold bg-primary rounded" href="reports_admin.php"><i class="ri-pie-chart-line"></i> Reports</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="logs_admin.php"><i class="ri-history-line"></i> Logs</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="announcement_admin.php"><i class="ri-megaphone-line"></i> Announcements</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="settings_admin.php"><i class="ri-settings-4-line"></i> Settings</a></li>
+            </ul>
+
+            <div class="p-3 border-top border-secondary bg-dark">
+                <a href="profile_admin.php" class="d-flex align-items-center text-white text-decoration-none mb-3">
+                    
+                        {% if db_pic %}
+                    <img src="{{ db_pic }}" alt="Admin" class="sidebar-user-avatar me-2" style="border:none;">
+                    
+                    {% else %}
+                    <div class="sidebar-user-initials me-2" style="width:38px;height:38px;font-size:0.8rem;">{{ initials }}</div>
+                    {% endif %}
+                    
+                    <div>
+                        <div class="fw-bold">{{ admin_name|e }}</div>
+                        <small class="text-white-50">{{ admin_role }}</small>
+                    </div>
+                </a>
+                <a class="btn btn-outline-danger w-100 btn-sm" href="logout.php"><i class="ri-logout-box-line me-2"></i> Sign Out</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content-admin">
+        
+        <div class="d-flex align-items-center justify-content-between mb-4 d-lg-none mobile-menu-btn">
+            <h4 class="fw-bold text-dark mb-0">Transaction Ledger</h4>
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i class="ri-menu-line"></i> Menu
+            </button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3 header-actions flex-wrap gap-2">
+            <div>
+                <h4 class="fw-bold text-dark mb-0"><i class="ri-booklet-line me-2 text-primary"></i>Transaction Report</h4>
+                <small class="text-muted">Official record of document requests.</small>
+            </div>
+            <div class="d-flex gap-2">
+                <button id="printBtn" class="btn btn-sm btn-dark fw-bold px-3"><i class="ri-printer-line me-1"></i> Print Official Report</button>
+                <button id="exportBtn" class="btn btn-sm btn-success fw-bold px-3"><i class="ri-file-excel-line me-1"></i> Export CSV</button>
+            </div>
+        </div>
+
+        <div class="ledger-container">
+            
+            <div id="printHeader">
+                <img src="{{ LOGO_LEFT }}" class="header-logo-left" onerror="this.style.opacity=0">
+                <img src="{{ LOGO_RIGHT }}" class="header-logo-right" onerror="this.style.opacity=0">
+                
+                <h4>Republic of the Philippines</h4>
+                <h4>Province of {{ PROVINCE }}</h4>
+                <h4>City of {{ CITY_NAME }}</h4>
+                <h3>BARANGAY {{ BRGY_NAME }}</h3>
+                <br>
+                <h3 style="text-decoration: underline;">TRANSACTION REPORT</h3>
+                <p style="font-size: 10pt; margin-top: 5px;">Generated on: <span id="printDate"></span></p>
+            </div>
+
+            <div class="filter-bar">
+                <div style="flex: 2;">
+                    <label class="form-label">Search</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Start</label>
+                    <input type="date" id="startDate" class="form-control">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">End</label>
+                    <input type="date" id="endDate" class="form-control">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Status</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All</option>
+                        <option>Pending</option>
+                        <option>Approved</option>
+                        <option>Processing</option>
+                        <option>Ready for Pickup</option>
+                        <option>Completed</option>
+                        <option>Rejected</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Payment</label>
+                    <select id="paymentFilter" class="form-select">
+                        <option value="">All</option>
+                        <option>Paid</option>
+                        <option>Unpaid</option>
+                    </select>
+                </div>
+                <div style="padding-bottom: 1px;">
+                    <button id="btnFilter" class="btn btn-primary btn-sm px-3 fw-bold">Filter</button>
+                    <button id="btnReset" class="btn btn-light border btn-sm px-3 ms-1"><i class="ri-refresh-line"></i></button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-ledger" id="ledgerTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Resident Name</th>
+                            <th>Document</th>
+                            <th>Ref No.</th>
+                            <th>Method</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="ledger-footer">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small fw-bold text-muted text-uppercase">Count:</span>
+                    <span class="summary-value" id="footCount">0</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small fw-bold text-muted text-uppercase">Total:</span>
+                    <span class="summary-value text-success" id="footRevenue">₱0.00</span>
+                </div>
+            </div>
+
+            <div id="printFooter">
+                <div class="row">
+                    <div class="col-6">
+                        <p style="margin-bottom: 5px;">Prepared by:</p>
+                        <div class="signature-line"></div>
+                        <p class="fw-bold text-uppercase mb-0">{{ admin_name|e }}</p>
+                        <p class="small fst-italic">Designated Officer</p>
+                    </div>
+                    <div class="col-6 text-end align-self-end">
+                        <p class="mb-0 fw-bold" style="font-size: 12pt;">Grand Total: <span id="printTotalRev"></span></p>
+                        <p class="small text-muted fst-italic">Official Q-DOC System Report</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tableBody = document.querySelector('#ledgerTable tbody');
+    const searchInput = document.getElementById('searchInput');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    const statusFilter = document.getElementById('statusFilter');
+    const paymentFilter = document.getElementById('paymentFilter'); 
+    
+    loadLedger();
+
+    function loadLedger() {
+        const params = new URLSearchParams({
+            search: searchInput.value,
+            start: startDate.value,
+            end: endDate.value,
+            status: statusFilter.value,
+            payment: paymentFilter.value
+        });
+
+        fetch('fetch_reports.php?' + params.toString())
+        .then(res => res.json())
+        .then(data => { renderTable(data); })
+        .catch(err => console.error(err));
+    }
+
+    function renderTable(data) {
+        tableBody.innerHTML = '';
+        let totalRev = 0;
+        let visibleCount = 0;
+        const payFilterVal = paymentFilter.value;
+
+        data.forEach(row => {
+            if(payFilterVal && row.payment_status !== payFilterVal) return;
+
+            visibleCount++;
+            if(row.payment_status === 'Paid') totalRev += parseFloat(row.price || 0);
+
+            let statusClass = 'st-pending';
+            if(row.status === 'Approved') statusClass = 'st-approved';
+            else if(row.status === 'Processing') statusClass = 'st-processing';
+            else if(row.status === 'Ready for Pickup') statusClass = 'st-pickup';
+            else if(row.status === 'Completed') statusClass = 'st-completed';
+            else if(row.status === 'Rejected') statusClass = 'st-rejected';
+
+            let payMethod = row.payment_method || '-';
+            let refNo = row.ref_no || row.payment_reference || '-';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="fw-bold text-muted">#${row.id}</td>
+                <td>${row.formatted_date}</td>
+                <td class="fw-bold text-dark">${row.fullname}</td>
+                <td>${row.document_type}</td>
+                <td class="text-secondary small">${refNo}</td>
+                <td class="small">${payMethod}</td>
+                <td class="text-end fw-bold">₱${parseFloat(row.price || 0).toFixed(2)}</td>
+                <td class="text-center"><span class="badge-status ${statusClass}">${row.status}</span></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        if(visibleCount === 0) tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-4 text-muted">No records found.</td></tr>`;
+
+        const formattedTotal = '₱' + totalRev.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('footCount').innerText = visibleCount;
+        document.getElementById('footRevenue').innerText = formattedTotal;
+        document.getElementById('printTotalRev').innerText = formattedTotal;
+    }
+
+    document.getElementById('btnFilter').addEventListener('click', loadLedger);
+    document.getElementById('btnReset').addEventListener('click', () => {
+        searchInput.value = ''; startDate.value = ''; endDate.value = ''; 
+        statusFilter.value = ''; paymentFilter.value = '';
+        loadLedger();
+    });
+    
+    // --- PRINT BUTTON WITH CENTRALIZED LOGGING ---
+    document.getElementById('printBtn').addEventListener('click', () => {
+        // 1. Update Date
+        document.getElementById('printDate').innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        
+        // 2. Log using ajax_log.php
+        const formData = new FormData();
+        formData.append('action', 'Print Report');
+        formData.append('description', 'Admin printed the Transaction Report.');
+
+        fetch('ajax_log.php', { method: 'POST', body: formData })
+            .then(() => {
+                 window.print();
+            })
+            .catch(err => console.error("Logging failed:", err)); 
+    });
+
+    // --- EXPORT CSV BUTTON WITH CENTRALIZED LOGGING ---
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        const rows = Array.from(document.querySelectorAll('#ledgerTable tbody tr'));
+        
+        if(rows.length === 0 || (rows.length === 1 && rows[0].cells.length < 2)) {
+            return alert("No data available to export.");
+        }
+
+        // Build CSV
+        let csvContent = "Request ID,Date,Resident Name,Document Type,Reference No.,Payment Method,Amount,Status\n";
+
+        rows.forEach(row => {
+            const cols = row.querySelectorAll('td');
+            const clean = (text) => `"${text.replace(/(\r\n|\n|\r)/gm, " ").trim().replace(/"/g, '""')}"`;
+
+            const id = clean(cols[0].innerText);
+            const date = clean(cols[1].innerText);
+            const name = clean(cols[2].innerText);
+            const doc = clean(cols[3].innerText);
+            const ref = `"\t${clean(cols[4].innerText).replace(/"/g, '')}"`; 
+            const method = clean(cols[5].innerText);
+            let amount = cols[6].innerText.replace(/[₱,]/g, '').trim(); 
+            const status = clean(cols[7].innerText);
+
+            csvContent += `${id},${date},${name},${doc},${ref},${method},${amount},${status}\n`;
+        });
+
+        // Trigger Download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const today = new Date().toISOString().split('T')[0];
+        link.download = `Transaction_Report_${today}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // 3. LOG ACTION (New Centralized Way)
+        const formData = new FormData();
+        formData.append('action', 'Export CSV');
+        formData.append('description', 'Admin exported the Transaction Report to CSV.');
+
+        fetch('ajax_log.php', { method: 'POST', body: formData })
+            .catch(err => console.error("Log failed:", err));
+    });
+});
+</script>
+</body>
+</html>
