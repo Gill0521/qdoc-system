@@ -3,6 +3,7 @@ import re
 import secrets
 import random
 import smtplib
+import requests
 from email.message import EmailMessage
 from email.utils import formataddr
 from datetime import date, datetime, timedelta
@@ -55,24 +56,16 @@ def mask_email(email):
 
 
 def send_gmail_otp(to_email, otp_code, purpose="Q:DOC Verification Code"):
-    mail_server = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-    mail_port = int(os.getenv("MAIL_PORT", "587"))
-    mail_username = os.getenv("MAIL_USERNAME", "")
-    mail_password = os.getenv("MAIL_PASSWORD", "").replace(" ", "")
-    sender_email = os.getenv("MAIL_DEFAULT_SENDER", mail_username)
+    brevo_api_key = os.getenv("BREVO_API_KEY", "").strip()
+    sender_email = os.getenv("MAIL_DEFAULT_SENDER", "").strip()
     sender_name = os.getenv("MAIL_SENDER_NAME", "Q-DOC System")
     expiry_minutes = os.getenv("OTP_EXPIRY_MINUTES", "5")
 
-    if not mail_username or not mail_password or mail_username.startswith('your_'):
-        raise ValueError("Gmail SMTP is not configured. Please check MAIL_USERNAME and MAIL_PASSWORD in .env.")
+    if not brevo_api_key:
+        raise ValueError("BREVO_API_KEY is not configured in Render Environment Variables.")
 
-    logo_path = BASE_DIR / "assets" / "images" / "Q-DOC Logo.png"
-    logo_cid = "qdoc_logo"
-
-    msg = EmailMessage()
-    msg["Subject"] = purpose
-    msg["From"] = formataddr((sender_name, sender_email))
-    msg["To"] = to_email
+    if not sender_email:
+        raise ValueError("MAIL_DEFAULT_SENDER is not configured in Render Environment Variables.")
 
     plain_text = f"""Hello,
 
@@ -91,51 +84,83 @@ Q-DOC System
     html_content = f"""
     <!DOCTYPE html>
     <html>
-    <head><meta charset="UTF-8"><title>{purpose}</title></head>
     <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f6f8; padding:30px 0;">
-            <tr><td align="center">
-                <table width="650" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;">
-                    <tr><td align="center" style="padding:35px 20px 10px 20px;">
-                        <img src="cid:{logo_cid}" alt="Q-DOC Logo" style="max-width:180px; height:auto; display:block;">
-                    </td></tr>
-                    <tr><td align="center" style="padding:20px 40px 10px 40px;">
-                        <p style="margin:0; font-size:18px; color:#1f2937;">Your 6-digit verification code is:</p>
-                    </td></tr>
-                    <tr><td align="center" style="padding:18px 20px 10px 20px;">
-                        <div style="font-size:42px; font-weight:700; color:#111827; letter-spacing:4px;">{otp_code}</div>
-                    </td></tr>
-                    <tr><td align="center" style="padding:10px 20px;">
-                        <p style="margin:0; font-size:16px; color:#4b5563;">Valid for {expiry_minutes} minutes.</p>
-                    </td></tr>
-                    <tr><td align="center" style="padding:15px 20px 35px 20px;">
-                        <p style="margin:0; font-size:16px; color:#dc2626; font-weight:700;">Do not share this code.</p>
-                    </td></tr>
-                </table>
-                <table width="650" cellpadding="0" cellspacing="0" border="0">
-                    <tr><td align="center" style="padding:18px 20px 0 20px; font-size:12px; color:#6b7280;">
-                        This is an automated message from Q:DOC Barangay Document Request System.
-                    </td></tr>
-                </table>
-            </td></tr>
+            <tr>
+                <td align="center">
+                    <table width="650" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;">
+                        <tr>
+                            <td align="center" style="padding:35px 20px 10px 20px;">
+                                <h1 style="margin:0; color:#123f78; font-size:34px;">Q-DOC</h1>
+                                <p style="margin:8px 0 0 0; color:#6b7280;">Barangay Document Request System</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding:25px 40px 10px 40px;">
+                                <p style="margin:0; font-size:18px; color:#1f2937;">Your 6-digit verification code is:</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding:18px 20px 10px 20px;">
+                                <div style="font-size:42px; font-weight:700; color:#111827; letter-spacing:4px;">{otp_code}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding:10px 20px;">
+                                <p style="margin:0; font-size:16px; color:#4b5563;">Valid for {expiry_minutes} minutes.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center" style="padding:15px 20px 35px 20px;">
+                                <p style="margin:0; font-size:16px; color:#dc2626; font-weight:700;">Do not share this code.</p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table width="650" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td align="center" style="padding:18px 20px 0 20px; font-size:12px; color:#6b7280;">
+                                This is an automated message from Q:DOC Barangay Document Request System.
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
         </table>
     </body>
     </html>
     """
 
-    msg.set_content(plain_text)
-    msg.add_alternative(html_content, subtype="html")
+    payload = {
+        "sender": {
+            "name": sender_name,
+            "email": sender_email
+        },
+        "to": [
+            {
+                "email": to_email
+            }
+        ],
+        "subject": purpose,
+        "htmlContent": html_content,
+        "textContent": plain_text
+    }
 
-    if logo_path.exists():
-        with open(logo_path, "rb") as logo_file:
-            logo_data = logo_file.read()
-        html_part = msg.get_payload()[1]
-        html_part.add_related( logo_data, maintype="image", subtype="png", cid=f"<{logo_cid}>", filename="Q-DOC.png", disposition="inline")
+    headers = {
+        "accept": "application/json",
+        "api-key": brevo_api_key,
+        "content-type": "application/json"
+    }
 
-    with smtplib.SMTP(mail_server, mail_port) as server:
-        server.starttls()
-        server.login(mail_username, mail_password)
-        server.send_message(msg)
+    response = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers=headers,
+        json=payload,
+        timeout=20
+    )
+
+    if response.status_code >= 300:
+        raise ValueError(f"Email API failed: {response.status_code} - {response.text[:300]}")
 
 
 def is_otp_expired(expiry_value):
