@@ -185,6 +185,22 @@ def uploads(filename):
 def healthz():
     return 'OK', 200
 
+@app.route('/db-ping')
+def db_ping():
+    secret = request.args.get('key', '')
+
+    if secret != os.getenv('PING_SECRET', ''):
+        return 'Forbidden', 403
+
+    try:
+        row = fetch_one('SELECT 1 AS ok')
+        if row and row.get('ok') == 1:
+            return 'DB OK', 200
+        return 'DB ERROR', 500
+    except Exception as exc:
+        print('DB ping failed:', exc)
+        return 'DB ERROR', 500
+
 # ---------------------------------------------------------------------
 # Database helpers
 # ---------------------------------------------------------------------
